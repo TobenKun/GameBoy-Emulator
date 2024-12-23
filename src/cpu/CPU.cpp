@@ -5,13 +5,16 @@
 #include <iostream>
 #include <vector>
 
-CPU::CPU()
+CPU::CPU() : AF({0}), BC({0}), DE({0}), HL({0}), sp(0), pc(0)
 {
-	std::memset(memory, 0, sizeof(memory));
+	memory.fill(0);
 	// else
 }
 
-CPU::~CPU() {}
+CPU::~CPU()
+{
+	// do something
+}
 
 bool CPU::LoadROM(const std::string& filename)
 {
@@ -43,4 +46,16 @@ bool CPU::LoadROM(const std::string& filename)
 	}
 	std::cerr << "Failed to open ROM file: " << filename << std::endl;
 	return (false);
+}
+
+void CPU::PrintRegisters() const
+{
+	printf("AF: %04X BC: %04X DE: %04X HL: %04X SP: %04X PC: %04X\n", AF.value,
+		   BC.value, DE.value, HL.value, sp, pc);
+}
+
+void CPU::PrintFlags() const
+{
+	printf("Z: %01X N: %01X H: %01X C: %01X unused: %04X\n", F.z, F.n, F.h, F.c,
+		   F.unused);
 }
