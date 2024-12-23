@@ -7,7 +7,9 @@
 # add_subdirectory(common)
 
 # 실행 파일 생성
-add_executable(GameBoyEmulator main.cpp)
+add_executable(GameBoyEmulator 
+	main.cpp
+	./cpu/CPU.cpp)
 
 target_compile_options(GameBoyEmulator PUBLIC -Wall -Wextra -Werror)
 
