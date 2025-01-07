@@ -2,6 +2,8 @@
 roms/
 build/
 obj/
+/build/
+external/googletest/build/
 
 # 컴파일된 파일
 *.o

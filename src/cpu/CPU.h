@@ -35,10 +35,9 @@ class CPU
 	void PrintRegisters() const;
 	void PrintFlags() const;
 
-  public:
+  private:
 	std::array<uint8_t, 0x10000> memory;
 
-  private:	// Instruction
 	// Register
 	union
 	{
@@ -93,4 +92,15 @@ class CPU
 		[&]() -> uint8_t& { return memory[HL.value++]; },
 		[&]() -> uint8_t& { return memory[HL.value--]; },
 	};
+
+  private:	// instruction test done
+  private:	// TODO: NEED TEST!!!
+	void opcode_nope();
+	void opcode_LD_r16_imm16();
+	void opcode_LD_r16mem_A();
+	void opcode_LD_A_r16mem();
+	void opcode_LD_imm16_sp();
+	void opcode_INC_r16();
+	void opcode_DEC_r16();
+	void opcode_LD_r8_imm8();
 };
