@@ -97,6 +97,7 @@ class CPU
 
   private:	// instruction test done
   public:	// TODO: NEED TEST!!!
+	void opcode_dummy();
 	void opcode_nope();
 	void opcode_LD_r16_imm16();
 	void opcode_LD_r16mem_A();
@@ -104,5 +105,8 @@ class CPU
 	void opcode_LD_imm16_sp();
 	void opcode_INC_r16();
 	void opcode_DEC_r16();
+	void opcode_ADD_hl_r16();
+	void opcode_INC_r8();
+	void opcode_DEC_r8();
 	void opcode_LD_r8_imm8();
 };
