@@ -35,7 +35,7 @@ class CPU
 	void PrintRegisters() const;
 	void PrintFlags() const;
 
-  private:
+  public:
 	std::array<uint8_t, 0x10000> memory;
 
 	// Register
@@ -95,6 +95,8 @@ class CPU
 
   private:	// instruction test done
   private:	// TODO: NEED TEST!!!
+	void run();
+	void cycle();
 	void opcode_nope();
 	void opcode_LD_r16_imm16();
 	void opcode_LD_r16mem_A();

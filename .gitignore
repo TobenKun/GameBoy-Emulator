@@ -2,7 +2,6 @@
 roms/
 build/
 obj/
-/build/
 external/googletest/build/
 
 # 컴파일된 파일
@@ -10,3 +9,19 @@ external/googletest/build/
 *.a
 *.out
 *.exe
+
+# CMake 관련 파일
+CMakeCache.txt
+CMakeFiles/
+CMakeFiles
+*.cmake
+compile_commands.json
+
+# 기타 파일
+.DS_Store
+*.log
+*.tmp
+*.swp
+
+# 캐시 디렉토리
+.cache/

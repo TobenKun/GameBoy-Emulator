@@ -48,6 +48,11 @@ bool CPU::LoadROM(const std::string& filename)
 	return (false);
 }
 
+void CPU::run() {}
+
+void CPU::cycle() {}
+
+// FOR TEST!!
 void CPU::PrintRegisters() const
 {
 	printf("AF: %04X BC: %04X DE: %04X HL: %04X SP: %04X PC: %04X\n", AF.value,
