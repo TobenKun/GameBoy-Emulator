@@ -3,7 +3,7 @@
 
 // Cycle example
 //
-// void CPU::Cycle()
+// void CPU::run()
 // {
 // 	while (1)
 // 	{
@@ -13,18 +13,18 @@
 // 	}
 // }
 
-void CPU::opcode_nope()
+void CPU::opcode_nope()	 // 0b00000000
 {
 	// do nothing
 }
 
-void CPU::opcode_LD_r16_imm16()
+void CPU::opcode_LD_r16_imm16()	 // 0b00**0001
 {
 	int dest = (opcode & 0x30) >> 4;
 
 	uint16_t& target = r16[dest]();
-	uint16_t  imm_byte = memory[pc++] << 8;
-	imm_byte |= memory[pc++];
+	uint16_t  imm_byte = memory[pc++];
+	imm_byte |= (memory[pc++] << 8);  // little endian!!!!!!!
 
 	target = imm_byte;
 }

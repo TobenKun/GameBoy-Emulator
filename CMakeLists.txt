@@ -24,9 +24,12 @@ add_subdirectory(external/googletest)
 include_directories(include)
 include_directories(src/cpu)
 
+# src 디렉토리의 모든 .cpp 파일 가져옴
+file(GLOB SOURCES "src/*/*.cpp")
+
 # 테스트 실행 파일
 enable_testing()
-add_executable(run_tests tests/main.cpp tests/test_cpu.cpp)
+add_executable(run_tests tests/main.cpp tests/test_cpu.cpp ${SOURCES})
 target_link_libraries(run_tests gtest gtest_main)
 
 # 테스트 추가

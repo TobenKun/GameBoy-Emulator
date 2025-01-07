@@ -48,9 +48,36 @@ bool CPU::LoadROM(const std::string& filename)
 	return (false);
 }
 
-void CPU::run() {}
+void CPU::run()
+{
+	while (1)
+	{
+		cycle();
+	}
+}
 
-void CPU::cycle() {}
+void CPU::cycle()
+{
+	opcode = memory[pc++];
+	switch (opcode)
+	{
+		case 0x00:
+			opcode_nope();
+			break;
+		case 0x02:
+			opcode_LD_r16mem_A();
+			break;
+		case 0x12:
+			opcode_LD_r16mem_A();
+			break;
+		case 0x22:
+			opcode_LD_r16mem_A();
+			break;
+		case 0x32:
+			opcode_LD_r16mem_A();
+			break;
+	}
+}
 
 // FOR TEST!!
 void CPU::PrintRegisters() const

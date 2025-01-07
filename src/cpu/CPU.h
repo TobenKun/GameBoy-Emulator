@@ -30,6 +30,8 @@ class CPU
 	CPU();
 	~CPU();
 	bool LoadROM(const std::string& filename);
+	void run();
+	void cycle();
 
   public:  // for debug func
 	void PrintRegisters() const;
@@ -94,9 +96,7 @@ class CPU
 	};
 
   private:	// instruction test done
-  private:	// TODO: NEED TEST!!!
-	void run();
-	void cycle();
+  public:	// TODO: NEED TEST!!!
 	void opcode_nope();
 	void opcode_LD_r16_imm16();
 	void opcode_LD_r16mem_A();
