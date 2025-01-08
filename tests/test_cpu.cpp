@@ -284,6 +284,12 @@ TEST_F(CPUTest, opcode_ADD_hl_r16)
 
 	EXPECT_EQ(cpu.HL.value, 0x68AC);
 	EXPECT_EQ(cpu.pc, 0x101);
+	EXPECT_EQ(cpu.F.z, 0);	// Zero flag should be unaffected
+	EXPECT_EQ(cpu.F.n, 0);	// Subtract flag should be reset
+	EXPECT_EQ(cpu.F.h, ((0x1234 & 0xFFF) + (0x5678 & 0xFFF)) & 0x1000
+						   ? 1
+						   : 0);  // Half carry flag check
+	EXPECT_EQ(cpu.F.c, 0);		  // Carry flag should be reset
 
 	cpu.pc = 0x100;
 	cpu.memory[0x100] = 0x19;  // ADD HL, DE
@@ -292,8 +298,14 @@ TEST_F(CPUTest, opcode_ADD_hl_r16)
 
 	cpu.cycle();  // Execute instruction
 
-	EXPECT_EQ(cpu.HL.value, 0xACE0);
+	EXPECT_EQ(cpu.HL.value, 0xACF0);
 	EXPECT_EQ(cpu.pc, 0x101);
+	EXPECT_EQ(cpu.F.z, 0);	// Zero flag should be unaffected
+	EXPECT_EQ(cpu.F.n, 0);	// Subtract flag should be reset
+	EXPECT_EQ(cpu.F.h, ((0x9ABC & 0xFFF) + (0x1234 & 0xFFF)) & 0x1000
+						   ? 1
+						   : 0);  // Half carry flag check
+	EXPECT_EQ(cpu.F.c, 0);		  // Carry flag should be reset
 
 	cpu.pc = 0x100;
 	cpu.memory[0x100] = 0x29;  // ADD HL, HL
@@ -303,6 +315,12 @@ TEST_F(CPUTest, opcode_ADD_hl_r16)
 
 	EXPECT_EQ(cpu.HL.value, 0x2468);
 	EXPECT_EQ(cpu.pc, 0x101);
+	EXPECT_EQ(cpu.F.z, 0);	// Zero flag should be unaffected
+	EXPECT_EQ(cpu.F.n, 0);	// Subtract flag should be reset
+	EXPECT_EQ(cpu.F.h, ((0x1234 & 0xFFF) + (0x1234 & 0xFFF)) & 0x1000
+						   ? 1
+						   : 0);  // Half carry flag check
+	EXPECT_EQ(cpu.F.c, 0);		  // Carry flag should be reset
 
 	cpu.pc = 0x100;
 	cpu.memory[0x100] = 0x39;  // ADD HL, SP
@@ -311,8 +329,14 @@ TEST_F(CPUTest, opcode_ADD_hl_r16)
 
 	cpu.cycle();  // Execute instruction
 
-	EXPECT_EQ(cpu.HL.value, 0xACE0);
+	EXPECT_EQ(cpu.HL.value, 0xACF0);
 	EXPECT_EQ(cpu.pc, 0x101);
+	EXPECT_EQ(cpu.F.z, 0);	// Zero flag should be unaffected
+	EXPECT_EQ(cpu.F.n, 0);	// Subtract flag should be reset
+	EXPECT_EQ(cpu.F.h, ((0x9ABC & 0xFFF) + (0x1234 & 0xFFF)) & 0x1000
+						   ? 1
+						   : 0);  // Half carry flag check
+	EXPECT_EQ(cpu.F.c, 0);		  // Carry flag should be reset
 }
 
 // opcode_INC_r8 테스트
@@ -320,21 +344,27 @@ TEST_F(CPUTest, opcode_INC_r8)
 {
 	cpu.pc = 0x100;
 	cpu.memory[0x100] = 0x3C;  // INC A
-	cpu.A = 0x12;
+	cpu.A = 0x0F;
 
 	cpu.cycle();  // Execute instruction
 
-	EXPECT_EQ(cpu.A, 0x13);
+	EXPECT_EQ(cpu.A, 0x10);
 	EXPECT_EQ(cpu.pc, 0x101);
+	EXPECT_EQ(cpu.F.z, 0);	// Zero flag should be 0
+	EXPECT_EQ(cpu.F.n, 0);	// Subtract flag should be 0
+	EXPECT_EQ(cpu.F.h, 1);	// Half-carry flag should be 0
 
 	cpu.pc = 0x100;
 	cpu.memory[0x100] = 0x04;  // INC B
-	cpu.BC.hi = 0x34;
+	cpu.BC.hi = 0xFF;
 
 	cpu.cycle();  // Execute instruction
 
-	EXPECT_EQ(cpu.BC.hi, 0x35);
+	EXPECT_EQ(cpu.BC.hi, 0x00);
 	EXPECT_EQ(cpu.pc, 0x101);
+	EXPECT_EQ(cpu.F.z, 1);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 1);
 
 	cpu.pc = 0x100;
 	cpu.memory[0x100] = 0x0C;  // INC C
@@ -344,6 +374,9 @@ TEST_F(CPUTest, opcode_INC_r8)
 
 	EXPECT_EQ(cpu.BC.lo, 0x57);
 	EXPECT_EQ(cpu.pc, 0x101);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 0);
 
 	cpu.pc = 0x100;
 	cpu.memory[0x100] = 0x14;  // INC D
@@ -353,6 +386,9 @@ TEST_F(CPUTest, opcode_INC_r8)
 
 	EXPECT_EQ(cpu.DE.hi, 0x79);
 	EXPECT_EQ(cpu.pc, 0x101);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 0);
 
 	cpu.pc = 0x100;
 	cpu.memory[0x100] = 0x1C;  // INC E
@@ -362,6 +398,9 @@ TEST_F(CPUTest, opcode_INC_r8)
 
 	EXPECT_EQ(cpu.DE.lo, 0x9B);
 	EXPECT_EQ(cpu.pc, 0x101);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 0);
 
 	cpu.pc = 0x100;
 	cpu.memory[0x100] = 0x24;  // INC H
@@ -371,6 +410,9 @@ TEST_F(CPUTest, opcode_INC_r8)
 
 	EXPECT_EQ(cpu.HL.hi, 0xBD);
 	EXPECT_EQ(cpu.pc, 0x101);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 0);
 
 	cpu.pc = 0x100;
 	cpu.memory[0x100] = 0x2C;  // INC L
@@ -380,28 +422,36 @@ TEST_F(CPUTest, opcode_INC_r8)
 
 	EXPECT_EQ(cpu.HL.lo, 0xDF);
 	EXPECT_EQ(cpu.pc, 0x101);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 0);
 }
 
-// opcode_DEC_r8 테스트
 TEST_F(CPUTest, opcode_DEC_r8)
 {
 	cpu.pc = 0x100;
 	cpu.memory[0x100] = 0x3D;  // DEC A
-	cpu.A = 0x12;
+	cpu.A = 0x10;
 
 	cpu.cycle();  // Execute instruction
 
-	EXPECT_EQ(cpu.A, 0x11);
+	EXPECT_EQ(cpu.A, 0x0F);
 	EXPECT_EQ(cpu.pc, 0x101);
+	EXPECT_EQ(cpu.F.z, 0);	// Zero flag should be 0
+	EXPECT_EQ(cpu.F.n, 1);	// Subtract flag should be 1
+	EXPECT_EQ(cpu.F.h, 1);	// Half-carry flag should be 0
 
 	cpu.pc = 0x100;
 	cpu.memory[0x100] = 0x05;  // DEC B
-	cpu.BC.hi = 0x34;
+	cpu.BC.hi = 0x01;
 
 	cpu.cycle();  // Execute instruction
 
-	EXPECT_EQ(cpu.BC.hi, 0x33);
+	EXPECT_EQ(cpu.BC.hi, 0x00);
 	EXPECT_EQ(cpu.pc, 0x101);
+	EXPECT_EQ(cpu.F.z, 1);
+	EXPECT_EQ(cpu.F.n, 1);
+	EXPECT_EQ(cpu.F.h, 0);
 
 	cpu.pc = 0x100;
 	cpu.memory[0x100] = 0x0D;  // DEC C
@@ -411,6 +461,9 @@ TEST_F(CPUTest, opcode_DEC_r8)
 
 	EXPECT_EQ(cpu.BC.lo, 0x55);
 	EXPECT_EQ(cpu.pc, 0x101);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 1);
+	EXPECT_EQ(cpu.F.h, 0);
 
 	cpu.pc = 0x100;
 	cpu.memory[0x100] = 0x15;  // DEC D
@@ -420,6 +473,9 @@ TEST_F(CPUTest, opcode_DEC_r8)
 
 	EXPECT_EQ(cpu.DE.hi, 0x77);
 	EXPECT_EQ(cpu.pc, 0x101);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 1);
+	EXPECT_EQ(cpu.F.h, 0);
 
 	cpu.pc = 0x100;
 	cpu.memory[0x100] = 0x1D;  // DEC E
@@ -429,6 +485,9 @@ TEST_F(CPUTest, opcode_DEC_r8)
 
 	EXPECT_EQ(cpu.DE.lo, 0x99);
 	EXPECT_EQ(cpu.pc, 0x101);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 1);
+	EXPECT_EQ(cpu.F.h, 0);
 
 	cpu.pc = 0x100;
 	cpu.memory[0x100] = 0x25;  // DEC H
@@ -438,6 +497,9 @@ TEST_F(CPUTest, opcode_DEC_r8)
 
 	EXPECT_EQ(cpu.HL.hi, 0xBB);
 	EXPECT_EQ(cpu.pc, 0x101);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 1);
+	EXPECT_EQ(cpu.F.h, 0);
 
 	cpu.pc = 0x100;
 	cpu.memory[0x100] = 0x2D;  // DEC L
@@ -447,6 +509,9 @@ TEST_F(CPUTest, opcode_DEC_r8)
 
 	EXPECT_EQ(cpu.HL.lo, 0xDD);
 	EXPECT_EQ(cpu.pc, 0x101);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 1);
+	EXPECT_EQ(cpu.F.h, 0);
 }
 
 // opcode_LD_r8_imm8 테스트

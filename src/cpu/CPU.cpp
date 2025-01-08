@@ -143,6 +143,50 @@ void CPU::cycle()
 			opcode_DEC_r8();
 			break;
 
+		// ld r8, imm8
+		case 0x06:
+		case 0x0E:
+		case 0x16:
+		case 0x1E:
+		case 0x26:
+		case 0x2E:
+		case 0x36:
+		case 0x3E:
+			opcode_LD_r8_imm8();
+			break;
+
+		case 0x07:
+			opcode_rlca();
+			break;
+
+		case 0x0F:
+			opcode_rrca();
+			break;
+
+		case 0x17:
+			opcode_rla();
+			break;
+
+		case 0x1F:
+			opcode_rra();
+			break;
+
+		case 0x27:
+			opcode_daa();
+			break;
+
+		case 0x2F:
+			opcode_cpl();
+			break;
+
+		case 0x37:
+			opcode_scf();
+			break;
+
+		case 0x3F:
+			opcode_ccf();
+			break;
+
 		default:
 			opcode_dummy();
 			break;

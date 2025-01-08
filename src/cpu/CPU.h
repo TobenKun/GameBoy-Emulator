@@ -61,12 +61,12 @@ class CPU
 
 	// get 8-bit register
 	std::array<std::function<uint8_t&()>, 8> r8 = {
-		[&]() -> uint8_t& { return BC.lo; },
 		[&]() -> uint8_t& { return BC.hi; },
-		[&]() -> uint8_t& { return DE.lo; },
+		[&]() -> uint8_t& { return BC.lo; },
 		[&]() -> uint8_t& { return DE.hi; },
-		[&]() -> uint8_t& { return HL.lo; },
+		[&]() -> uint8_t& { return DE.lo; },
 		[&]() -> uint8_t& { return HL.hi; },
+		[&]() -> uint8_t& { return HL.lo; },
 		[&]() -> uint8_t& { return memory[HL.value]; },
 		[&]() -> uint8_t& { return A; },
 	};
@@ -95,8 +95,7 @@ class CPU
 		[&]() -> uint8_t& { return memory[HL.value--]; },
 	};
 
-  private:	// instruction test done
-  public:	// TODO: NEED TEST!!!
+  public:  // instruction test done
 	void opcode_dummy();
 	void opcode_nope();
 	void opcode_LD_r16_imm16();
@@ -109,4 +108,14 @@ class CPU
 	void opcode_INC_r8();
 	void opcode_DEC_r8();
 	void opcode_LD_r8_imm8();
+
+  public:  // TODO: NEED TEST!!!
+	void opcode_rlca();
+	void opcode_rrca();
+	void opcode_rla();
+	void opcode_rra();
+	void opcode_daa();
+	void opcode_cpl();
+	void opcode_scf();
+	void opcode_ccf();
 };

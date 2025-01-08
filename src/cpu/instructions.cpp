@@ -74,30 +74,48 @@ void CPU::opcode_DEC_r16()	// 0x0B 0x1B 0x2B 0x3B
 	target--;
 }
 
-void CPU::opcode_ADD_hl_r16()  // 0x09 0x19 0x29 0x39
+void CPU::opcode_ADD_hl_r16()
+// 0x09 0x19 0x29 0x39
+// Flags: N, H, C
 {
 	int		  operand = (opcode & 0x30) >> 4;
 	uint16_t& target = r16[operand]();
-	HL.value += target;
-	// TODO:: 플래그 레지스터 적당히 조절해줘야함~~!!
-	// n->0, 하프캐리, 캐리1
+	int		  result = HL.value + target;
+
+	// flag adjustment
+	F.n = 0;
+	F.c = result > 0xFFFF;
+	F.h = (HL.value & 0xFFF + target & 0xFFF) > 0xFFF;
+
+	HL.value = result;
 }
 
-void CPU::opcode_INC_r8()  // 0x04 0x0C 0x14 0x1C 0x24 0x2C 0x34 0x3C
+void CPU::opcode_INC_r8()
+// 0x04 0x0C 0x14 0x1C 0x24 0x2C 0x34 0x3C
+// Flags: Z, N, H
 {
-	int		 operand = (opcode & 0x38) >> 4;
+	int		 operand = opcode >> 3;
 	uint8_t& target = r8[operand]();
 	target++;
+
+	// flag adjustment
+	F.z = target == 0;
+	F.n = 0;
+	F.h = (target & 0x0F) == 0x00;
 }
 
 void CPU::opcode_DEC_r8()  // 0x05 0x0D 0x15 0x1D 0x25 0x2D 0x35 0x3D
 {
-	int		 operand = (opcode & 0x38) >> 4;
+	int		 operand = opcode >> 3;
 	uint8_t& target = r8[operand]();
 	target--;
+
+	F.z = target == 0;
+	F.n = 1;
+	F.h = (target + 1 & 0x0F) == 0x00;
 }
 
-void CPU::opcode_LD_r8_imm8()  //
+void CPU::opcode_LD_r8_imm8()  // 0x06 0x0E 0x16 0x1E 0x26 0x2E 0x36 0x3E
 {
 	uint8_t operand = (opcode & 0x38) >> 3;
 	uint8_t imm_byte = memory[pc++];
@@ -105,4 +123,115 @@ void CPU::opcode_LD_r8_imm8()  //
 	uint8_t& target = r8[operand]();
 
 	target = imm_byte;
+}
+
+// TODO: ---------여기서부터 테스트 필요-------------
+void CPU::opcode_rlca()
+// 0x07
+// Flags: z, n, h, c
+{
+	F.c = (A & 0x80) >> 7;
+	A <<= 1;
+	A |= F.c;
+
+	// flag adjustment
+	F.z = 0;
+	F.n = 0;
+	F.h = 0;
+}
+
+void CPU::opcode_rrca()
+// 0x0F
+// Flags: z, n, h, c
+{
+	F.c = A & 0x01;
+	A >>= 1;
+	A |= F.c << 7;
+
+	// flag adjustment
+	F.z = 0;
+	F.n = 0;
+	F.h = 0;
+}
+
+void CPU::opcode_rla()
+// 0x17
+// Flags: z, n, h, c
+{
+	bool extra_bit = F.c;
+	F.c = (A & 0x80) >> 7;
+	A <<= 1;
+	A |= extra_bit;
+
+	// flag adjustment
+	F.z = 0;
+	F.n = 0;
+	F.h = 0;
+}
+
+void CPU::opcode_rra()
+// 0x1F
+// Flags: z, n, h, C
+{
+	bool extra_bit = F.c;
+	F.c = A & 0x01;
+	A >>= 1;
+	A |= F.c << 7;
+
+	// flag adjustment
+	F.z = 0;
+	F.n = 0;
+	F.h = 0;
+}
+
+void CPU::opcode_daa()
+// 0x27
+// Flags z, h, c
+{
+	int adjustment = 0;
+
+	switch (F.n)
+	{
+		case 1:
+			adjustment = 0x6 * F.h + 0x60 * F.c;
+			F.c = adjustment > A;
+			A -= adjustment;
+			break;
+		case 0:
+			adjustment += 0x6 * (F.h | (A & 0xF));
+			adjustment += 0x60 * (A > 0x9F);
+			int result = A + adjustment;
+			F.c = result > 0xFF;
+			A = result;
+			break;
+	}
+	F.z = A == 0;
+	F.h = 0;
+}
+
+void CPU::opcode_cpl()
+// 0x2F
+// Flags: N, H
+{
+	A = ~A;
+	F.n = 1;
+	F.h = 1;
+}
+
+void CPU::opcode_scf()
+// 0x37
+// Flags: n h c
+{
+	F.n = 0;
+	F.h = 0;
+	F.c = 0;
+}
+
+void CPU::opcode_ccf()
+// 0x3F
+// Flags: n h c
+{
+	F.n = 0;
+	F.h = 0;
+	F.c = ~F.c;
 }
