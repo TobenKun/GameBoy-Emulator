@@ -11,6 +11,8 @@ class CPUTest : public ::testing::Test
 		// 테스트 시작 전 초기화 부분
 		// cpu인스턴스는 생성시 0으로 초기화됨
 		// 다른 값이 필요하면 여기서 변경
+		cpu.A = 0;
+		cpu.F = {0, 0, 0, 0};
 	}
 
 	void TearDown() override
@@ -579,4 +581,115 @@ TEST_F(CPUTest, opcode_LD_r8_imm8)
 
 	EXPECT_EQ(cpu.HL.lo, 0xDE);
 	EXPECT_EQ(cpu.pc, 0x102);
+}
+
+TEST_F(CPUTest, opcode_rlca)
+{
+	cpu.A = 0x85;  // 10000101
+	cpu.opcode_rlca();
+	EXPECT_EQ(cpu.A, 0x0B);	 // 00001011
+	EXPECT_EQ(cpu.F.c, 1);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 0);
+}
+
+TEST_F(CPUTest, opcode_rrca)
+{
+	cpu.A = 0x85;  // 10000101
+	cpu.opcode_rrca();
+	EXPECT_EQ(cpu.A, 0xC2);	 // 11000010
+	EXPECT_EQ(cpu.F.c, 1);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 0);
+}
+
+TEST_F(CPUTest, opcode_rla)
+{
+	cpu.A = 0x85;  // 10000101
+	cpu.F.c = 1;
+	cpu.opcode_rla();
+	EXPECT_EQ(cpu.A, 0x0B);	 // 00001011
+	EXPECT_EQ(cpu.F.c, 1);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 0);
+}
+
+TEST_F(CPUTest, opcode_rra)
+{
+	cpu.A = 0x85;  // 10000101
+	cpu.F.c = 1;
+	cpu.opcode_rra();
+	EXPECT_EQ(cpu.A, 0xC2);	 // 11000010
+	EXPECT_EQ(cpu.F.c, 1);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 0);
+}
+
+// TODO: 다른 BCD 관련 명령어 만들고 나서
+// 그거 이용해서 테스트 다시 짜기
+TEST_F(CPUTest, opcode_daa)
+{
+	// 덧셈 이후 DAA 테스트 - 하위 4비트 조정
+	cpu.A = 0x0A;  // 하위 4비트가 10 이상
+	cpu.F.h = 1;   // 하프 캐리 발생
+	cpu.F.c = 0;   // 캐리 없음
+	cpu.F.n = 0;   // 덧셈
+	cpu.opcode_daa();
+
+	EXPECT_EQ(cpu.A, 0x10);	 // BCD 조정 결과
+	EXPECT_EQ(cpu.F.h, 0);	 // 하프 캐리 플래그 리셋
+	EXPECT_EQ(cpu.F.c, 0);	 // 캐리 플래그 유지
+
+	// 덧셈 이후 DAA 테스트 - 상위 4비트 조정
+	cpu.A = 0x9A;  // 상위 4비트가 10 이상
+	cpu.F.h = 1;   // 하프 캐리 발생
+	cpu.F.c = 1;   // 캐리 없음
+	cpu.F.n = 0;   // 덧셈
+	cpu.opcode_daa();
+
+	EXPECT_EQ(cpu.A, 0x00);	 // BCD 조정 결과 (캐리 발생)
+	EXPECT_EQ(cpu.F.h, 0);	 // 하프 캐리 플래그 리셋
+	EXPECT_EQ(cpu.F.c, 1);	 // 캐리 플래그 설정
+	EXPECT_EQ(cpu.F.z, 1);	 // 결과가 0이므로 제로 플래그 설정
+
+	// 뺄셈 이후 DAA 테스트
+	cpu.A = 0x1A;  // 초기 값
+	cpu.F.h = 1;   // 하프 캐리 발생
+	cpu.F.c = 0;   // 캐리 발생
+	cpu.F.n = 1;   // 뺄셈
+	cpu.opcode_daa();
+
+	EXPECT_EQ(cpu.A, 0x14);	 // BCD 조정 결과
+	EXPECT_EQ(cpu.F.h, 0);	 // 하프 캐리 플래그 리셋
+	EXPECT_EQ(cpu.F.c, 0);	 // 캐리 플래그 유지
+}
+
+TEST_F(CPUTest, opcode_cpl)
+{
+	cpu.A = 0x85;  // 10000101
+	cpu.opcode_cpl();
+	EXPECT_EQ(cpu.A, 0x7A);	 // 01111010
+	EXPECT_EQ(cpu.F.n, 1);
+	EXPECT_EQ(cpu.F.h, 1);
+}
+
+TEST_F(CPUTest, opcode_scf)
+{
+	cpu.opcode_scf();
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 0);
+	EXPECT_EQ(cpu.F.c, 1);
+}
+
+TEST_F(CPUTest, opcode_ccf)
+{
+	cpu.F.c = 1;
+	cpu.opcode_ccf();
+	EXPECT_EQ(cpu.F.c, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 0);
 }

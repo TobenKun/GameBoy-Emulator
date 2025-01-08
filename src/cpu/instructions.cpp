@@ -176,7 +176,7 @@ void CPU::opcode_rra()
 	bool extra_bit = F.c;
 	F.c = A & 0x01;
 	A >>= 1;
-	A |= F.c << 7;
+	A |= extra_bit << 7;
 
 	// flag adjustment
 	F.z = 0;
@@ -198,8 +198,8 @@ void CPU::opcode_daa()
 			A -= adjustment;
 			break;
 		case 0:
-			adjustment += 0x6 * (F.h | (A & 0xF));
-			adjustment += 0x60 * (A > 0x9F);
+			adjustment += 0x6 * (F.h | ((A & 0xF) > 0x9));
+			adjustment += 0x60 * (F.c | (A > 0x9F));
 			int result = A + adjustment;
 			F.c = result > 0xFF;
 			A = result;
@@ -224,7 +224,7 @@ void CPU::opcode_scf()
 {
 	F.n = 0;
 	F.h = 0;
-	F.c = 0;
+	F.c = 1;
 }
 
 void CPU::opcode_ccf()
