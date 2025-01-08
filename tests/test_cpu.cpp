@@ -693,3 +693,30 @@ TEST_F(CPUTest, opcode_ccf)
 	EXPECT_EQ(cpu.F.n, 0);
 	EXPECT_EQ(cpu.F.h, 0);
 }
+
+TEST_F(CPUTest, opcode_jr_imm8)
+{
+	// Test 1: Forward jump
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0x18;  // JR opcode
+	cpu.memory[0x101] = 0x05;  // Offset +5
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.pc, 0x107);  // PC should jump to 0x100 + 2 + 5
+
+	// Test 2: Backward jump
+	cpu.pc = 0x200;
+	cpu.memory[0x200] = 0x18;  // JR opcode
+	cpu.memory[0x201] = 0xFB;  // Offset -5 (0xFB as signed 8-bit is -5)
+	cpu.opcode_jr_imm8();
+
+	EXPECT_EQ(cpu.pc, 0x1FD);  // PC should jump to 0x200 + 2 - 5
+
+	// Test 3: No jump (offset = 0)
+	cpu.pc = 0x300;
+	cpu.memory[0x300] = 0x18;  // JR opcode
+	cpu.memory[0x301] = 0x00;  // Offset 0
+	cpu.opcode_jr_imm8();
+
+	EXPECT_EQ(cpu.pc, 0x302);  // PC should move to the next instruction
+}

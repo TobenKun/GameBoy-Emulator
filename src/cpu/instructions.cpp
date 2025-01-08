@@ -125,7 +125,6 @@ void CPU::opcode_LD_r8_imm8()  // 0x06 0x0E 0x16 0x1E 0x26 0x2E 0x36 0x3E
 	target = imm_byte;
 }
 
-// TODO: ---------여기서부터 테스트 필요-------------
 void CPU::opcode_rlca()
 // 0x07
 // Flags: z, n, h, c
@@ -234,4 +233,24 @@ void CPU::opcode_ccf()
 	F.n = 0;
 	F.h = 0;
 	F.c = ~F.c;
+}
+
+// TODO: ---------여기서부터 테스트 필요-------------
+// 08/01/2025
+void CPU::opcode_jr_imm8()
+// 0x18
+// Flags: none
+{
+	int8_t offset = memory[pc++];
+	pc += offset;
+}  // TODO:: 스위치문 연결 해야됨
+
+void CPU::opcode_jr_cond_imm8()
+{
+	// something
+}
+
+void CPU::opcode_stop()
+{
+	// something
 }

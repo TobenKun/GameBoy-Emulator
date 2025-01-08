@@ -109,7 +109,6 @@ class CPU
 	void opcode_DEC_r8();
 	void opcode_LD_r8_imm8();
 
-  public:  // TODO: NEED TEST!!!
 	void opcode_rlca();
 	void opcode_rrca();
 	void opcode_rla();
@@ -118,4 +117,9 @@ class CPU
 	void opcode_cpl();
 	void opcode_scf();
 	void opcode_ccf();
+
+  public:  // TODO: NEED TEST!!!
+	void opcode_jr_imm8();
+	void opcode_jr_cond_imm8();
+	void opcode_stop();
 };
