@@ -52,7 +52,7 @@ void CPU::run()
 {
 	while (1)
 	{
-		cycle();
+		if (!stopped) cycle();
 	}
 }
 
@@ -187,6 +187,22 @@ void CPU::cycle()
 			opcode_ccf();
 			break;
 
+		case 0x18:
+			opcode_jr_imm8();
+			break;
+
+		case 0x20:
+		case 0x28:
+		case 0x30:
+		case 0x38:
+			opcode_jr_cond_imm8();
+			break;
+
+		case 0x10:
+			opcode_stop();
+			break;
+
+		// 여기 들어오면 좆된거...
 		default:
 			opcode_dummy();
 			break;

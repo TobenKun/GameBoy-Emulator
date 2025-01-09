@@ -708,7 +708,7 @@ TEST_F(CPUTest, opcode_jr_imm8)
 	cpu.pc = 0x200;
 	cpu.memory[0x200] = 0x18;  // JR opcode
 	cpu.memory[0x201] = 0xFB;  // Offset -5 (0xFB as signed 8-bit is -5)
-	cpu.opcode_jr_imm8();
+	cpu.cycle();
 
 	EXPECT_EQ(cpu.pc, 0x1FD);  // PC should jump to 0x200 + 2 - 5
 
@@ -716,7 +716,69 @@ TEST_F(CPUTest, opcode_jr_imm8)
 	cpu.pc = 0x300;
 	cpu.memory[0x300] = 0x18;  // JR opcode
 	cpu.memory[0x301] = 0x00;  // Offset 0
-	cpu.opcode_jr_imm8();
+	cpu.cycle();
 
 	EXPECT_EQ(cpu.pc, 0x302);  // PC should move to the next instruction
+}
+
+TEST_F(CPUTest, opcode_jr_cond_imm8)
+{
+	// Test 1: Condition met, forward jump
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0x20;  // JR NZ, offset
+	cpu.memory[0x101] = 0x05;  // Offset +5
+	cpu.F.z = false;		   // NZ condition met
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.pc, 0x107);  // PC should jump to 0x100 + 2 + 5
+
+	// Test 2: Condition not met, no jump
+	cpu.pc = 0x200;
+	cpu.memory[0x200] = 0x20;  // JR NZ, offset
+	cpu.memory[0x201] = 0x05;  // Offset +5
+	cpu.F.z = true;			   // NZ condition not met
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.pc, 0x202);  // PC should move to the next instruction
+
+	// Test 3: Condition met, backward jump
+	cpu.pc = 0x300;
+	cpu.memory[0x300] = 0x28;  // JR Z, offset
+	cpu.memory[0x301] = 0xFB;  // Offset -5 (0xFB as signed 8-bit is -5)
+	cpu.F.z = true;			   // Z condition met
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.pc, 0x2FD);  // PC should jump to 0x300 + 2 - 5
+
+	// Test 4: Condition not met, no jump
+	cpu.pc = 0x400;
+	cpu.memory[0x400] = 0x28;  // JR Z, offset
+	cpu.memory[0x401] = 0xFB;  // Offset -5 (0xFB as signed 8-bit is -5)
+	cpu.F.z = false;		   // Z condition not met
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.pc, 0x402);  // PC should move to the next instruction
+}
+
+TEST_F(CPUTest, opcode_stop)
+{
+	// Test 1: Normal STOP instruction
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0x10;  // STOP opcode
+	cpu.memory[0x101] = 0x00;  // Second byte
+
+	cpu.cycle();
+
+	EXPECT_TRUE(cpu.stopped);  // CPU should be in stopped state
+	EXPECT_EQ(cpu.pc, 0x102);  // PC should advance by 2
+
+	// Test 2: STOP with incorrect second byte
+	cpu.pc = 0x200;
+	cpu.memory[0x200] = 0x10;  // STOP opcode
+	cpu.memory[0x201] = 0xFF;  // Invalid second byte
+
+	cpu.cycle();
+
+	EXPECT_TRUE(cpu.stopped);  // CPU should still stop
+	EXPECT_EQ(cpu.pc, 0x202);  // PC should advance by 2
 }

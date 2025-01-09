@@ -95,6 +95,14 @@ class CPU
 		[&]() -> uint8_t& { return memory[HL.value--]; },
 	};
 
+	// get conditions
+	std::array<std::function<bool()>, 4> cond = {
+		[&]() -> bool { return !F.z; },
+		[&]() -> bool { return F.z; },
+		[&]() -> bool { return !F.c; },
+		[&]() -> bool { return F.c; },
+	};
+
   public:  // instruction test done
 	void opcode_dummy();
 	void opcode_nope();
@@ -118,8 +126,11 @@ class CPU
 	void opcode_scf();
 	void opcode_ccf();
 
-  public:  // TODO: NEED TEST!!!
 	void opcode_jr_imm8();
 	void opcode_jr_cond_imm8();
 	void opcode_stop();
+
+  public:  // TODO: NEED TEST!!!
+  public:  // for gameboy state
+	bool stopped;
 };

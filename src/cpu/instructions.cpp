@@ -241,16 +241,34 @@ void CPU::opcode_jr_imm8()
 // 0x18
 // Flags: none
 {
-	int8_t offset = memory[pc++];
+	int8_t offset = static_cast<int8_t>(memory[pc++]);
 	pc += offset;
-}  // TODO:: 스위치문 연결 해야됨
+}
 
 void CPU::opcode_jr_cond_imm8()
+// 0x20 0x28 0x30 0x38
+// Flags: none
 {
-	// something
+	uint8_t condition = (opcode >> 3) & 0x3;
+	int8_t	offset = memory[pc++];
+
+	if (cond[condition]()) pc += offset;
 }
 
 void CPU::opcode_stop()
+// 0x10;
+// Flags: none
 {
-	// something
+	// second byte must be 0x00
+	uint8_t second_byte = memory[pc++];
+	if (second_byte != 0x00)
+	{
+		std::cerr
+			<< "Warning: STOP instruction second byte is not 0x00. Found: "
+			<< std::hex << static_cast<int>(second_byte) << std::endl;
+	}
+
+	// GBC double speed mode handler should be here if needed
+
+	stopped = true;
 }
