@@ -235,8 +235,6 @@ void CPU::opcode_ccf()
 	F.c = ~F.c;
 }
 
-// TODO: ---------여기서부터 테스트 필요-------------
-// 08/01/2025
 void CPU::opcode_jr_imm8()
 // 0x18
 // Flags: none
@@ -272,3 +270,6 @@ void CPU::opcode_stop()
 
 	stopped = true;
 }
+
+// TODO: ---------여기서부터 테스트 필요-------------
+// 09/01/2025

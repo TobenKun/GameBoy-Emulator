@@ -131,6 +131,7 @@ class CPU
 	void opcode_stop();
 
   public:  // TODO: NEED TEST!!!
+	void opcod
   public:  // for gameboy state
 	bool stopped;
 };
