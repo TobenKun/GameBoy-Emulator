@@ -151,6 +151,35 @@ class CPU
 	void opcode_cp_a_imm8();   // 0xFE
 
   public:  // TODO: NEED TEST!!!
+	void opcode_ret_cond();
+	void opcode_ret();
+	void opcode_reti();
+	void opcode_jp_cond_imm16();
+	void opcode_jp_imm16();
+	void opcode_jp_hl();
+	void opcode_call_cond_imm16();
+	void opcode_call_imm16();
+	void opcode_rst_tgt3();
+
+	void opcode_pop_r16stk();
+	void opcode_push_r16stk();
+
+	void opcode_prefix();
+
+	void opcode_ldh_c_a();
+	void opcode_ldh_imm8_a();
+	void opcode_ld_imm16_a();
+	void opcode_ldh_a_c();
+	void opcode_ldh_a_imm8();
+	void opcode_ld_a_imm16();
+
+	void opcode_add_sp_imm8();
+	void opcode_ld_hl_sp_imm8();
+	void opcode_ld_sp_hl();
+
+	void opcode_di();
+	void opcode_ei();
+
 	// 제일 마지막에 만들어야함
 	void opcode_halt();
 
