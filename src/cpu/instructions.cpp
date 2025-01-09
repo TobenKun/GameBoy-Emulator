@@ -20,7 +20,7 @@ void CPU::opcode_nope()	 // 0b00000000
 	// do nothing
 }
 
-void CPU::opcode_LD_r16_imm16()	 // 0x01 0x11 0x21 0x31
+void CPU::opcode_ld_r16_imm16()	 // 0x01 0x11 0x21 0x31
 {
 	int dest = (opcode & 0x30) >> 4;
 
@@ -31,7 +31,7 @@ void CPU::opcode_LD_r16_imm16()	 // 0x01 0x11 0x21 0x31
 	target = imm_byte;
 }
 
-void CPU::opcode_LD_r16mem_A()	// 0x02 0x12 0x22 0x32
+void CPU::opcode_ld_r16mem_a()	// 0x02 0x12 0x22 0x32
 {
 	int dest = (opcode & 0x30) >> 4;
 
@@ -39,7 +39,7 @@ void CPU::opcode_LD_r16mem_A()	// 0x02 0x12 0x22 0x32
 	target = A;
 }
 
-void CPU::opcode_LD_A_r16mem()	// 0x0A 0x1A 0x2A 0x3A
+void CPU::opcode_ld_a_r16mem()	// 0x0A 0x1A 0x2A 0x3A
 {
 	int src = (opcode & 0x30) >> 4;
 
@@ -47,7 +47,7 @@ void CPU::opcode_LD_A_r16mem()	// 0x0A 0x1A 0x2A 0x3A
 	A = src_byte;
 }
 
-void CPU::opcode_LD_imm16_sp()	// 0x08
+void CPU::opcode_ld_imm16_sp()	// 0x08
 {
 	uint16_t imm_byte = memory[pc++];
 	imm_byte |= (memory[pc++] << 8);
@@ -58,7 +58,7 @@ void CPU::opcode_LD_imm16_sp()	// 0x08
 	memory[imm_byte + 1] = (sp >> 8) & 0xFF;  // 상위 바이트 저장
 }
 
-void CPU::opcode_INC_r16()	// 0x03 0x13 0x23 0x33
+void CPU::opcode_inc_r16()	// 0x03 0x13 0x23 0x33
 {
 	int operand = (opcode & 0x30) >> 4;
 
@@ -66,7 +66,7 @@ void CPU::opcode_INC_r16()	// 0x03 0x13 0x23 0x33
 	target++;
 }
 
-void CPU::opcode_DEC_r16()	// 0x0B 0x1B 0x2B 0x3B
+void CPU::opcode_dec_r16()	// 0x0B 0x1B 0x2B 0x3B
 {
 	int operand = (opcode & 0x30) >> 4;
 
@@ -74,7 +74,7 @@ void CPU::opcode_DEC_r16()	// 0x0B 0x1B 0x2B 0x3B
 	target--;
 }
 
-void CPU::opcode_ADD_hl_r16()
+void CPU::opcode_add_hl_r16()
 // 0x09 0x19 0x29 0x39
 // Flags: N, H, C
 {
@@ -90,7 +90,7 @@ void CPU::opcode_ADD_hl_r16()
 	HL.value = result;
 }
 
-void CPU::opcode_INC_r8()
+void CPU::opcode_inc_r8()
 // 0x04 0x0C 0x14 0x1C 0x24 0x2C 0x34 0x3C
 // Flags: Z, N, H
 {
@@ -104,7 +104,7 @@ void CPU::opcode_INC_r8()
 	F.h = (target & 0x0F) == 0x00;
 }
 
-void CPU::opcode_DEC_r8()  // 0x05 0x0D 0x15 0x1D 0x25 0x2D 0x35 0x3D
+void CPU::opcode_dec_r8()  // 0x05 0x0D 0x15 0x1D 0x25 0x2D 0x35 0x3D
 {
 	int		 operand = opcode >> 3;
 	uint8_t& target = r8[operand]();
@@ -115,7 +115,7 @@ void CPU::opcode_DEC_r8()  // 0x05 0x0D 0x15 0x1D 0x25 0x2D 0x35 0x3D
 	F.h = (target + 1 & 0x0F) == 0x00;
 }
 
-void CPU::opcode_LD_r8_imm8()  // 0x06 0x0E 0x16 0x1E 0x26 0x2E 0x36 0x3E
+void CPU::opcode_ld_r8_imm8()  // 0x06 0x0E 0x16 0x1E 0x26 0x2E 0x36 0x3E
 {
 	uint8_t operand = (opcode & 0x38) >> 3;
 	uint8_t imm_byte = memory[pc++];
@@ -273,3 +273,147 @@ void CPU::opcode_stop()
 
 // TODO: ---------여기서부터 테스트 필요-------------
 // 09/01/2025
+
+void CPU::opcode_ld_r8_r8()
+// 0x40 - 0x7F except 0x76
+// Flags: none
+{
+	int src_operand = opcode & 0x7;
+	int dest_operand = (opcode >> 3) & 0x7;
+
+	uint8_t& src = r8[src_operand]();
+	uint8_t& dest = r8[dest_operand]();
+
+	dest = src;
+}
+
+void CPU::opcode_halt()
+// 0x76
+// Flags: none
+{
+	// TODO: 인터럽트 구조 짜고 나서 만들기
+}
+
+void CPU::opcode_add_a_r8()
+// 0x80 - 0x87
+// Flags: Z N H C
+{
+	uint8_t	 operand = opcode & 0x7;
+	uint8_t	 value = r8[operand]();
+	uint16_t result = A + value;
+
+	// Set flags
+	F.z = (result & 0xFF) == 0;	 // Zero flag
+	F.n = 0;					 // Add operation, so N flag is cleared
+	F.h = ((A & 0xF) + (value & 0xF)) > 0xF;  // Half carry flag
+	F.c = result > 0xFF;					  // Carry flag
+
+	A = result & 0xFF;	// Store the result back in the accumulator
+}
+
+void CPU::opcode_adc_a_r8()
+// 0x88 - 0x8F
+// Flags: Z N H C
+{
+	uint8_t	 operand = opcode & 0x7;
+	uint8_t	 value = r8[operand]();
+	uint16_t result = A + value + F.c;
+
+	// Set flags
+	F.z = (result & 0xFF) == 0;	 // Zero flag
+	F.n = 0;					 // Add operation, so N flag is cleared
+	F.h = ((A & 0xF) + (value & 0xF)) > 0xF;  // Half carry flag
+	F.c = result > 0xFF;					  // Carry flag
+
+	A = result & 0xFF;	// Store the result back in the accumulator
+}
+
+void CPU::opcode_sub_a_r8()
+// 0x90 - 0x97
+// Flags: Z N H C
+{
+	uint8_t	 operand = opcode & 0x7;
+	uint8_t	 value = r8[operand]();
+	uint16_t result = A - value;
+
+	F.z = (result & 0xFF) == 0;
+	F.n = 1;
+	F.h = (A & 0xF) < (value & 0xF);
+	F.c = value > A;
+
+	A = result & 0xFF;
+}
+
+void CPU::opcode_sbc_a_r8()
+// 0x98 - 0x9F
+// Flags: Z N H C
+{
+	uint8_t	 operand = opcode & 0x7;
+	uint8_t	 value = r8[operand]();
+	uint16_t result = A - value - F.c;
+
+	F.z = (result & 0xFF) == 0;
+	F.n = 1;
+	F.h = (A & 0xF) < (value & 0xF) + F.c;
+	F.c = value + F.c > A;
+
+	A = result & 0xFF;
+}
+
+void CPU::opcode_and_a_r8()
+// 0xA0 - 0xA7
+// Flags: Z N H C
+{
+	uint8_t operand = opcode & 0x7;
+	uint8_t value = r8[operand]();
+
+	F.z = (A & value) == 0;
+	F.n = 0;
+	F.h = 1;
+	F.c = 0;
+
+	A &= value;
+}
+
+void CPU::opcode_xor_a_r8()
+// 0xA8 - 0xAF
+// Flags: Z N H C
+{
+	uint8_t operand = opcode & 0x7;
+	uint8_t value = r8[operand]();
+
+	F.z = (A ^ value) == 0;
+	F.n = 0;
+	F.h = 0;
+	F.c = 0;
+
+	A ^= value;
+}
+
+void CPU::opcode_or_a_r8()
+// 0xB0 - 0xB8
+// Flags: Z N H C
+{
+	uint8_t operand = opcode & 0x7;
+	uint8_t value = r8[operand]();
+
+	F.z = (A | value) == 0;
+	F.n = 0;
+	F.h = 0;
+	F.c = 0;
+
+	A |= value;
+}
+
+void CPU::opcode_cp_a_r8()
+// 0xB8 - 0xBF
+// Flags: Z N H C
+{
+	uint8_t operand = opcode & 0x7;
+	uint8_t value = r8[operand]();
+
+	F.z = (A - value) == 0;
+	F.n = 1;
+	F.h = (A & 0xF) < (value & 0xF);
+	F.c = value > A;
+}

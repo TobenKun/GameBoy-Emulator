@@ -106,16 +106,16 @@ class CPU
   public:  // instruction test done
 	void opcode_dummy();
 	void opcode_nope();
-	void opcode_LD_r16_imm16();
-	void opcode_LD_r16mem_A();
-	void opcode_LD_A_r16mem();
-	void opcode_LD_imm16_sp();
-	void opcode_INC_r16();
-	void opcode_DEC_r16();
-	void opcode_ADD_hl_r16();
-	void opcode_INC_r8();
-	void opcode_DEC_r8();
-	void opcode_LD_r8_imm8();
+	void opcode_ld_r16_imm16();
+	void opcode_ld_r16mem_a();
+	void opcode_ld_a_r16mem();
+	void opcode_ld_imm16_sp();
+	void opcode_inc_r16();
+	void opcode_dec_r16();
+	void opcode_add_hl_r16();
+	void opcode_inc_r8();
+	void opcode_dec_r8();
+	void opcode_ld_r8_imm8();
 
 	void opcode_rlca();
 	void opcode_rrca();
@@ -130,8 +130,21 @@ class CPU
 	void opcode_jr_cond_imm8();
 	void opcode_stop();
 
+	void opcode_ld_r8_r8();
+
+	void opcode_add_a_r8();
+	void opcode_adc_a_r8();
+	void opcode_sub_a_r8();
+	void opcode_sbc_a_r8();
+	void opcode_and_a_r8();
+	void opcode_xor_a_r8();
+	void opcode_or_a_r8();
+	void opcode_cp_a_r8();
+
   public:  // TODO: NEED TEST!!!
-	void opcod
+	// 제일 마지막에 만들어야함
+	void opcode_halt();
+
   public:  // for gameboy state
 	bool stopped;
 };

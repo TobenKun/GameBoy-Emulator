@@ -782,3 +782,299 @@ TEST_F(CPUTest, opcode_stop)
 	EXPECT_TRUE(cpu.stopped);  // CPU should still stop
 	EXPECT_EQ(cpu.pc, 0x202);  // PC should advance by 2
 }
+
+TEST_F(CPUTest, opcode_ld_r8_r8)
+{
+	// LD B, C
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0x41;  // LD B, C
+	cpu.BC.lo = 0x12;
+	cpu.cycle();
+	EXPECT_EQ(cpu.BC.hi, 0x12);
+	EXPECT_EQ(cpu.pc, 0x101);
+
+	// LD D, E
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0x53;  // LD D, E
+	cpu.DE.lo = 0x34;
+	cpu.cycle();
+	EXPECT_EQ(cpu.DE.hi, 0x34);
+	EXPECT_EQ(cpu.pc, 0x101);
+
+	// LD H, L
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0x65;  // LD H, L
+	cpu.HL.lo = 0x56;
+	cpu.cycle();
+	EXPECT_EQ(cpu.HL.hi, 0x56);
+	EXPECT_EQ(cpu.pc, 0x101);
+}
+
+/* TODO: 인터럽트 구현하고 마저 테스트하기
+TEST_F(CPUTest, opcode_halt)
+{
+	// HALT
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0x76;  // HALT opcode
+	cpu.cycle();
+	EXPECT_TRUE(cpu.halted);
+	EXPECT_EQ(cpu.pc, 0x101);
+}
+*/
+
+TEST_F(CPUTest, opcode_add_a_r8)
+{
+	// ADD A, B
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0x80;  // ADD A, B
+	cpu.A = 0x12;
+	cpu.BC.hi = 0x34;
+	cpu.cycle();
+	EXPECT_EQ(cpu.A, 0x46);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, ((0x12 & 0xF) + (0x34 & 0xF)) & 0x10 ? 1 : 0);
+	EXPECT_EQ(cpu.F.c, 0);
+	EXPECT_EQ(cpu.pc, 0x101);
+
+	// ADD A, C
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0x81;  // ADD A, C
+	cpu.A = 0x12;
+	cpu.BC.lo = 0x34;
+	cpu.cycle();
+	EXPECT_EQ(cpu.A, 0x46);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, ((0x12 & 0xF) + (0x34 & 0xF)) & 0x10 ? 1 : 0);
+	EXPECT_EQ(cpu.F.c, 0);
+	EXPECT_EQ(cpu.pc, 0x101);
+}
+
+TEST_F(CPUTest, opcode_adc_a_r8)
+{
+	// ADC A, B
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0x88;  // ADC A, B
+	cpu.A = 0x12;
+	cpu.BC.hi = 0x34;
+	cpu.F.c = 1;
+	cpu.cycle();
+	EXPECT_EQ(cpu.A, 0x47);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, ((0x12 & 0xF) + (0x34 & 0xF) + 1) & 0x10 ? 1 : 0);
+	EXPECT_EQ(cpu.F.c, 0);
+	EXPECT_EQ(cpu.pc, 0x101);
+
+	// ADC A, C
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0x89;  // ADC A, C
+	cpu.A = 0x12;
+	cpu.BC.lo = 0x34;
+	cpu.F.c = 1;
+	cpu.cycle();
+	EXPECT_EQ(cpu.A, 0x47);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, ((0x12 & 0xF) + (0x34 & 0xF) + 1) & 0x10 ? 1 : 0);
+	EXPECT_EQ(cpu.F.c, 0);
+	EXPECT_EQ(cpu.pc, 0x101);
+}
+
+TEST_F(CPUTest, opcode_sub_a_r8)
+{
+	// SUB A, B
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0x90;  // SUB A, B
+	cpu.A = 0x34;
+	cpu.BC.hi = 0x12;
+	cpu.cycle();
+	EXPECT_EQ(cpu.A, 0x22);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 1);
+	EXPECT_EQ(cpu.F.h, ((0x34 & 0xF) < (0x12 & 0xF)) ? 1 : 0);
+	EXPECT_EQ(cpu.F.c, 0);
+	EXPECT_EQ(cpu.pc, 0x101);
+
+	// SUB A, C
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0x91;  // SUB A, C
+	cpu.A = 0x34;
+	cpu.BC.lo = 0x12;
+	cpu.cycle();
+	EXPECT_EQ(cpu.A, 0x22);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 1);
+	EXPECT_EQ(cpu.F.h, ((0x34 & 0xF) < (0x12 & 0xF)) ? 1 : 0);
+	EXPECT_EQ(cpu.F.c, 0);
+	EXPECT_EQ(cpu.pc, 0x101);
+}
+
+TEST_F(CPUTest, opcode_sbc_a_r8)
+{
+	// SBC A, B
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0x98;  // SBC A, B
+	cpu.A = 0x34;
+	cpu.BC.hi = 0x12;
+	cpu.F.c = 1;
+	cpu.cycle();
+	EXPECT_EQ(cpu.A, 0x21);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 1);
+	EXPECT_EQ(cpu.F.h, ((0x34 & 0xF) < (0x12 & 0xF) + 1) ? 1 : 0);
+	EXPECT_EQ(cpu.F.c, 0);
+	EXPECT_EQ(cpu.pc, 0x101);
+
+	// SBC A, C
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0x99;  // SBC A, C
+	cpu.A = 0x34;
+	cpu.BC.lo = 0x12;
+	cpu.F.c = 1;
+	cpu.cycle();
+	EXPECT_EQ(cpu.A, 0x21);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 1);
+	EXPECT_EQ(cpu.F.h, ((0x34 & 0xF) < (0x12 & 0xF) + 1) ? 1 : 0);
+	EXPECT_EQ(cpu.F.c, 0);
+	EXPECT_EQ(cpu.pc, 0x101);
+}
+
+TEST_F(CPUTest, opcode_and_a_r8)
+{
+	// AND A, B
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xA0;  // AND A, B
+	cpu.A = 0x3C;
+	cpu.BC.hi = 0x12;
+	cpu.cycle();
+	EXPECT_EQ(cpu.A, 0x10);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 1);
+	EXPECT_EQ(cpu.F.c, 0);
+	EXPECT_EQ(cpu.pc, 0x101);
+
+	// AND A, C
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xA1;  // AND A, C
+	cpu.A = 0x3C;
+	cpu.BC.lo = 0x12;
+	cpu.cycle();
+	EXPECT_EQ(cpu.A, 0x10);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 1);
+	EXPECT_EQ(cpu.F.c, 0);
+	EXPECT_EQ(cpu.pc, 0x101);
+}
+
+TEST_F(CPUTest, opcode_xor_a_r8)
+{
+	// XOR A, B
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xA8;  // XOR A, B
+	cpu.A = 0x3C;
+	cpu.BC.hi = 0x12;
+	cpu.cycle();
+	EXPECT_EQ(cpu.A, 0x2E);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 0);
+	EXPECT_EQ(cpu.F.c, 0);
+	EXPECT_EQ(cpu.pc, 0x101);
+
+	// XOR A, C
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xA9;  // XOR A, C
+	cpu.A = 0x3C;
+	cpu.BC.lo = 0x12;
+	cpu.cycle();
+	EXPECT_EQ(cpu.A, 0x2E);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 0);
+	EXPECT_EQ(cpu.F.c, 0);
+	EXPECT_EQ(cpu.pc, 0x101);
+}
+
+TEST_F(CPUTest, opcode_or_a_r8)
+{
+	// OR A, B
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xB0;  // OR A, B
+	cpu.A = 0x0F;
+	cpu.BC.hi = 0xF0;
+	cpu.cycle();
+	EXPECT_EQ(cpu.A, 0xFF);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 0);
+	EXPECT_EQ(cpu.F.c, 0);
+	EXPECT_EQ(cpu.pc, 0x101);
+
+	// OR A, C
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xB1;  // OR A, C
+	cpu.A = 0x0F;
+	cpu.BC.lo = 0xF0;
+	cpu.cycle();
+	EXPECT_EQ(cpu.A, 0xFF);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 0);
+	EXPECT_EQ(cpu.F.c, 0);
+	EXPECT_EQ(cpu.pc, 0x101);
+
+	// OR A, A (result should be zero)
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xB7;  // OR A, A
+	cpu.A = 0x00;
+	cpu.cycle();
+	EXPECT_EQ(cpu.A, 0x00);
+	EXPECT_EQ(cpu.F.z, 1);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 0);
+	EXPECT_EQ(cpu.F.c, 0);
+	EXPECT_EQ(cpu.pc, 0x101);
+}
+
+TEST_F(CPUTest, opcode_cp_a_r8)
+{
+	// CP A, B
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xB8;  // CP A, B
+	cpu.A = 0x12;
+	cpu.BC.hi = 0x12;
+	cpu.cycle();
+	EXPECT_EQ(cpu.F.z, 1);
+	EXPECT_EQ(cpu.F.n, 1);
+	EXPECT_EQ(cpu.F.h, 0);
+	EXPECT_EQ(cpu.F.c, 0);
+	EXPECT_EQ(cpu.pc, 0x101);
+
+	// CP A, C
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xB9;  // CP A, C
+	cpu.A = 0x34;
+	cpu.BC.lo = 0x12;
+	cpu.cycle();
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 1);
+	EXPECT_EQ(cpu.F.h, ((0x34 & 0xF) < (0x12 & 0xF)) ? 1 : 0);
+	EXPECT_EQ(cpu.F.c, 0);
+	EXPECT_EQ(cpu.pc, 0x101);
+
+	// CP A, A (result should be zero)
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xBF;  // CP A, A
+	cpu.A = 0x34;
+	cpu.cycle();
+	EXPECT_EQ(cpu.F.z, 1);
+	EXPECT_EQ(cpu.F.n, 1);
+	EXPECT_EQ(cpu.F.h, 0);
+	EXPECT_EQ(cpu.F.c, 0);
+	EXPECT_EQ(cpu.pc, 0x101);
+}
