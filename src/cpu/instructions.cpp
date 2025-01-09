@@ -271,9 +271,6 @@ void CPU::opcode_stop()
 	stopped = true;
 }
 
-// TODO: ---------여기서부터 테스트 필요-------------
-// 09/01/2025
-
 void CPU::opcode_ld_r8_r8()
 // 0x40 - 0x7F except 0x76
 // Flags: none
@@ -411,6 +408,125 @@ void CPU::opcode_cp_a_r8()
 {
 	uint8_t operand = opcode & 0x7;
 	uint8_t value = r8[operand]();
+
+	F.z = (A - value) == 0;
+	F.n = 1;
+	F.h = (A & 0xF) < (value & 0xF);
+	F.c = value > A;
+}
+
+// TODO: ---------여기서부터 테스트 필요-------------
+// 09/01/2025
+
+void CPU::opcode_add_a_imm8()
+// 0xC6
+// Flags: Z N H C
+{
+	uint8_t	 value = memory[pc++];
+	uint16_t result = A + value;
+
+	// Set flags
+	F.z = (result & 0xFF) == 0;	 // Zero flag
+	F.n = 0;					 // Add operation, so N flag is cleared
+	F.h = ((A & 0xF) + (value & 0xF)) > 0xF;  // Half carry flag
+	F.c = result > 0xFF;					  // Carry flag
+
+	A = result & 0xFF;	// Store the result back in the accumulator
+}
+
+void CPU::opcode_adc_a_imm8()
+// 0xCE
+// Flags: Z N H C
+{
+	uint8_t	 value = memory[pc++];
+	uint16_t result = A + value + F.c;
+
+	// Set flags
+	F.z = (result & 0xFF) == 0;	 // Zero flag
+	F.n = 0;					 // Add operation, so N flag is cleared
+	F.h = ((A & 0xF) + (value & 0xF)) > 0xF;  // Half carry flag
+	F.c = result > 0xFF;					  // Carry flag
+
+	A = result & 0xFF;	// Store the result back in the accumulator
+}
+
+void CPU::opcode_sub_a_imm8()
+// 0xD6
+// Flags: Z N H C
+{
+	uint8_t	 value = memory[pc++];
+	uint16_t result = A - value;
+
+	F.z = (result & 0xFF) == 0;
+	F.n = 1;
+	F.h = (A & 0xF) < (value & 0xF);
+	F.c = value > A;
+
+	A = result & 0xFF;
+}
+
+void CPU::opcode_sbc_a_imm8()
+// 0xDE
+// Flags: Z N H C
+{
+	uint8_t	 value = memory[pc++];
+	uint16_t result = A - value - F.c;
+
+	F.z = (result & 0xFF) == 0;
+	F.n = 1;
+	F.h = (A & 0xF) < (value & 0xF) + F.c;
+	F.c = value + F.c > A;
+
+	A = result & 0xFF;
+}
+
+void CPU::opcode_and_a_imm8()
+// 0xDE
+// Flags: Z N H C
+{
+	uint8_t value = memory[pc++];
+
+	F.z = (A & value) == 0;
+	F.n = 0;
+	F.h = 1;
+	F.c = 0;
+
+	A &= value;
+}
+
+void CPU::opcode_xor_a_imm8()
+// 0xEE
+// Flags: Z N H C
+{
+	uint8_t value = memory[pc++];
+
+	F.z = (A ^ value) == 0;
+	F.n = 0;
+	F.h = 0;
+	F.c = 0;
+
+	A ^= value;
+}
+
+void CPU::opcode_or_a_imm8()
+// 0xF6
+// Flags: Z N H C
+{
+	uint8_t value = memory[pc++];
+
+	F.z = (A | value) == 0;
+	F.n = 0;
+	F.h = 0;
+	F.c = 0;
+
+	A |= value;
+}
+
+void CPU::opcode_cp_a_imm8()
+// 0xFE
+// Flags: Z N H C
+{
+	uint8_t value = memory[pc++];
 
 	F.z = (A - value) == 0;
 	F.n = 1;

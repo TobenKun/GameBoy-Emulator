@@ -370,6 +370,38 @@ void CPU::cycle()
 			opcode_cp_a_r8();
 			break;
 
+		case 0xC6:
+			opcode_add_a_imm8();
+			break;
+
+		case 0xCE:
+			opcode_adc_a_imm8();
+			break;
+
+		case 0xD6:
+			opcode_sub_a_imm8();
+			break;
+
+		case 0xDE:
+			opcode_sbc_a_imm8();
+			break;
+
+		case 0xE6:
+			opcode_and_a_imm8();
+			break;
+
+		case 0xEE:
+			opcode_xor_a_imm8();
+			break;
+
+		case 0xF6:
+			opcode_or_a_imm8();
+			break;
+
+		case 0xFE:
+			opcode_cp_a_imm8();
+			break;
+
 		// 여기 들어오면 좆된거...
 		default:
 			opcode_dummy();

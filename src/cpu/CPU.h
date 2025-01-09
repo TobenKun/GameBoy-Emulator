@@ -141,6 +141,15 @@ class CPU
 	void opcode_or_a_r8();
 	void opcode_cp_a_r8();
 
+	void opcode_add_a_imm8();  // 0xC6
+	void opcode_adc_a_imm8();  // 0xCE
+	void opcode_sub_a_imm8();  // 0xD6
+	void opcode_sbc_a_imm8();  // 0xDE
+	void opcode_and_a_imm8();  // 0xE6
+	void opcode_xor_a_imm8();  // 0xEE
+	void opcode_or_a_imm8();   // 0xF6
+	void opcode_cp_a_imm8();   // 0xFE
+
   public:  // TODO: NEED TEST!!!
 	// 제일 마지막에 만들어야함
 	void opcode_halt();

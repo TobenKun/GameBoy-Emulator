@@ -1078,3 +1078,93 @@ TEST_F(CPUTest, opcode_cp_a_r8)
 	EXPECT_EQ(cpu.F.c, 0);
 	EXPECT_EQ(cpu.pc, 0x101);
 }
+
+TEST_F(CPUTest, opcode_add_a_imm8)
+{
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xC6;  // opcode for ADD A, imm8
+	cpu.memory[0x101] = 0x20;  // immediate value
+	cpu.A = 0x10;
+	cpu.cycle();
+	EXPECT_EQ(cpu.A, 0x30);
+	EXPECT_EQ(cpu.pc, 0x102);
+}
+
+TEST_F(CPUTest, opcode_adc_a_imm8)
+{
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xCE;  // opcode for ADC A, imm8
+	cpu.memory[0x101] = 0x20;  // immediate value
+	cpu.A = 0x10;
+	cpu.F.c = 0x01;	 // set carry flag
+	cpu.cycle();
+	EXPECT_EQ(cpu.A, 0x31);
+	EXPECT_EQ(cpu.pc, 0x102);
+}
+
+TEST_F(CPUTest, opcode_sub_a_imm8)
+{
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xD6;  // opcode for SUB A, imm8
+	cpu.memory[0x101] = 0x10;  // immediate value
+	cpu.A = 0x30;
+	cpu.cycle();
+	EXPECT_EQ(cpu.A, 0x20);
+	EXPECT_EQ(cpu.pc, 0x102);
+}
+
+TEST_F(CPUTest, opcode_sbc_a_imm8)
+{
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xDE;  // opcode for SBC A, imm8
+	cpu.memory[0x101] = 0x10;  // immediate value
+	cpu.A = 0x30;
+	cpu.F.c = 0x01;	 // set carry flag
+	cpu.cycle();
+	EXPECT_EQ(cpu.A, 0x1F);
+	EXPECT_EQ(cpu.pc, 0x102);
+}
+
+TEST_F(CPUTest, opcode_and_a_imm8)
+{
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xE6;  // opcode for AND A, imm8
+	cpu.memory[0x101] = 0x0F;  // immediate value
+	cpu.A = 0xF0;
+	cpu.cycle();
+	EXPECT_EQ(cpu.A, 0x00);
+	EXPECT_EQ(cpu.pc, 0x102);
+}
+
+TEST_F(CPUTest, opcode_xor_a_imm8)
+{
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xEE;  // opcode for XOR A, imm8
+	cpu.memory[0x101] = 0x0F;  // immediate value
+	cpu.A = 0xFF;
+	cpu.cycle();
+	EXPECT_EQ(cpu.A, 0xF0);
+	EXPECT_EQ(cpu.pc, 0x102);
+}
+
+TEST_F(CPUTest, opcode_or_a_imm8)
+{
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xF6;  // opcode for OR A, imm8
+	cpu.memory[0x101] = 0x0F;  // immediate value
+	cpu.A = 0xF0;
+	cpu.cycle();
+	EXPECT_EQ(cpu.A, 0xFF);
+	EXPECT_EQ(cpu.pc, 0x102);
+}
+
+TEST_F(CPUTest, opcode_cp_a_imm8)
+{
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xFE;  // opcode for CP A, imm8
+	cpu.memory[0x101] = 0x20;  // immediate value
+	cpu.A = 0x20;
+	cpu.cycle();
+	EXPECT_EQ(cpu.F.z, 1);	// check zero flag
+	EXPECT_EQ(cpu.pc, 0x102);
+}
