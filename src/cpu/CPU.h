@@ -103,6 +103,11 @@ class CPU
 		[&]() -> bool { return F.c; },
 	};
 
+	// rst vector
+	std::array<uint8_t, 8> rst = {
+		0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38,
+	};
+
   public:  // instruction test done
 	void opcode_dummy();
 	void opcode_nope();
@@ -150,7 +155,6 @@ class CPU
 	void opcode_or_a_imm8();   // 0xF6
 	void opcode_cp_a_imm8();   // 0xFE
 
-  public:  // TODO: NEED TEST!!!
 	void opcode_ret_cond();
 	void opcode_ret();
 	void opcode_reti();
@@ -161,6 +165,7 @@ class CPU
 	void opcode_call_imm16();
 	void opcode_rst_tgt3();
 
+  public:  // TODO: NEED TEST!!!
 	void opcode_pop_r16stk();
 	void opcode_push_r16stk();
 
@@ -185,4 +190,5 @@ class CPU
 
   public:  // for gameboy state
 	bool stopped;
+	bool interrupt_enalbled;
 };

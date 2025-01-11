@@ -5,7 +5,15 @@
 #include <iostream>
 #include <vector>
 
-CPU::CPU() : AF({0}), BC({0}), DE({0}), HL({0}), sp(0), pc(0)
+CPU::CPU() :
+	AF({0}),
+	BC({0}),
+	DE({0}),
+	HL({0}),
+	sp(0),
+	pc(0),
+	stopped(false),
+	interrupt_enalbled(true)
 {
 	memory.fill(0);
 	// else
@@ -400,6 +408,57 @@ void CPU::cycle()
 
 		case 0xFE:
 			opcode_cp_a_imm8();
+			break;
+
+		case 0xC0:
+		case 0xC8:
+		case 0xD0:
+		case 0xD8:
+			opcode_ret_cond();
+			break;
+
+		case 0xC9:
+			opcode_ret();
+			break;
+
+		case 0xD9:
+			opcode_reti();
+			break;
+
+		case 0xC2:
+		case 0xCA:
+		case 0xD2:
+		case 0xDA:
+			opcode_jp_cond_imm16();
+			break;
+
+		case 0xC3:
+			opcode_jp_imm16();
+			break;
+
+		case 0xE9:
+			opcode_jp_hl();
+			break;
+
+		case 0xC4:
+		case 0xCC:
+		case 0xD4:
+		case 0xDC:
+			opcode_call_cond_imm16();
+			break;
+
+		case 0xCD:
+			opcode_call_imm16();
+			break;
+
+		case 0xC7:
+		case 0xCF:
+		case 0xD7:
+		case 0xDF:
+		case 0xEF:
+		case 0xF7:
+		case 0xFF:
+			opcode_rst_tgt3();
 			break;
 
 		// 여기 들어오면 좆된거...

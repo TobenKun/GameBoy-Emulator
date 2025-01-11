@@ -1168,3 +1168,259 @@ TEST_F(CPUTest, opcode_cp_a_imm8)
 	EXPECT_EQ(cpu.F.z, 1);	// check zero flag
 	EXPECT_EQ(cpu.pc, 0x102);
 }
+
+// ret cond 명령어 테스트
+TEST_F(CPUTest, opcode_ret_cond)
+{
+	// 조건이 참일 때
+	cpu.pc = 0x100;
+	cpu.sp = 0xFFFE;
+	cpu.memory[0xFFFE] = 0x34;	// 하위 바이트
+	cpu.memory[0xFFFF] = 0x12;	// 상위 바이트
+	cpu.F.z = false;			// 조건 NZ (Not Zero)
+	cpu.memory[0x100] = 0xC0;	// opcode for RET NZ
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.pc, 0x1234);	// 프로그램 카운터가 스택에서 복원됨
+	EXPECT_EQ(cpu.sp, 0x0000);	// 스택 포인터가 증가됨
+
+	// 조건이 거짓일 때
+	cpu.pc = 0x200;
+	cpu.sp = 0xFFFE;
+	cpu.memory[0xFFFE] = 0x34;	// 하위 바이트
+	cpu.memory[0xFFFF] = 0x12;	// 상위 바이트
+	cpu.F.z = false;			// 조건 Z (Zero)
+	cpu.memory[0x200] = 0xC8;	// opcode for RET Z
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.pc, 0x201);	// 프로그램 카운터가 변경되지 않음
+	EXPECT_EQ(cpu.sp, 0xFFFE);	// 스택 포인터가 변경되지 않음
+}
+
+// ret 명령어 테스트
+TEST_F(CPUTest, opcode_ret)
+{
+	cpu.pc = 0x100;
+	cpu.sp = 0xFFFE;
+	cpu.memory[0xFFFE] = 0x34;	// 하위 바이트
+	cpu.memory[0xFFFF] = 0x12;	// 상위 바이트
+	cpu.memory[0x100] = 0xC9;	// opcode for RET
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.pc, 0x1234);	// 프로그램 카운터가 스택에서 복원됨
+	EXPECT_EQ(cpu.sp, 0x0000);	// 스택 포인터가 증가됨
+}
+
+// reti 명령어 테스트
+TEST_F(CPUTest, opcode_reti)
+{
+	cpu.pc = 0x100;
+	cpu.sp = 0xFFFE;
+	cpu.memory[0xFFFE] = 0x34;	// 하위 바이트
+	cpu.memory[0xFFFF] = 0x12;	// 상위 바이트
+	cpu.memory[0x100] = 0xD9;	// opcode for RETI
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.pc, 0x1234);	// 프로그램 카운터가 스택에서 복원됨
+	EXPECT_EQ(cpu.sp, 0x0000);			  // 스택 포인터가 증가됨
+	EXPECT_TRUE(cpu.interrupt_enalbled);  // 인터럽트가 활성화됨
+}
+
+// jp cond, imm16 명령어 테스트
+TEST_F(CPUTest, opcode_jp_cond_imm16)
+{
+	// 조건이 참일 때
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xC2;  // opcode for JP NZ, imm16
+	cpu.memory[0x101] = 0x34;  // 하위 바이트
+	cpu.memory[0x102] = 0x12;  // 상위 바이트
+	cpu.F.z = false;		   // 조건 NZ (Not Zero)
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.pc, 0x1234);	// 프로그램 카운터가 지정된 주소로 점프
+
+	// 조건이 거짓일 때
+	cpu.pc = 0x200;
+	cpu.memory[0x200] = 0xC2;  // opcode for JP NZ, imm16
+	cpu.memory[0x201] = 0x34;  // 하위 바이트
+	cpu.memory[0x202] = 0x12;  // 상위 바이트
+	cpu.F.z = true;			   // 조건 Z (Zero)
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.pc, 0x203);  // 프로그램 카운터가 다음 명령어로 이동
+}
+
+// jp imm16 명령어 테스트
+TEST_F(CPUTest, opcode_jp_imm16)
+{
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xC3;  // opcode for JP imm16
+	cpu.memory[0x101] = 0x34;  // 하위 바이트
+	cpu.memory[0x102] = 0x12;  // 상위 바이트
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.pc, 0x1234);	// 프로그램 카운터가 지정된 주소로 점프
+}
+
+// jp hl 명령어 테스트
+TEST_F(CPUTest, opcode_jp_hl)
+{
+	cpu.pc = 0x100;
+	cpu.HL.value = 0x1234;
+	cpu.memory[0x100] = 0xE9;  // opcode for JP (HL)
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.pc, 0x1234);	// 프로그램 카운터가 HL 레지스터의 값으로 점프
+}
+
+// call cond, imm16 명령어 테스트
+TEST_F(CPUTest, opcode_call_cond_imm16)
+{
+	// 조건이 참일 때
+	cpu.pc = 0x100;
+	cpu.sp = 0xFFFE;
+	cpu.memory[0x100] = 0xC4;  // opcode for CALL NZ, imm16
+	cpu.memory[0x101] = 0x34;  // 하위 바이트
+	cpu.memory[0x102] = 0x12;  // 상위 바이트
+	cpu.F.z = false;		   // 조건 NZ (Not Zero)
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.pc, 0x1234);	// 프로그램 카운터가 지정된 주소로 점프
+	EXPECT_EQ(cpu.memory[0xFFFD], 0x01);  // 상위 바이트가 스택에 저장됨
+	EXPECT_EQ(cpu.memory[0xFFFC], 0x03);  // 하위 바이트가 스택에 저장됨
+	EXPECT_EQ(cpu.sp, 0xFFFC);			  // 스택 포인터가 감소됨
+
+	// 조건이 거짓일 때
+	cpu.pc = 0x200;
+	cpu.sp = 0xFFFE;
+	cpu.memory[0x200] = 0xC4;  // opcode for CALL NZ, imm16
+	cpu.memory[0x201] = 0x34;  // 하위 바이트
+	cpu.memory[0x202] = 0x12;  // 상위 바이트
+	cpu.F.z = true;			   // 조건 Z (Zero)
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.pc, 0x203);  // 프로그램 카운터가 다음 명령어로 이동
+	EXPECT_EQ(cpu.sp, 0xFFFE);	// 스택 포인터가 변경되지 않음
+}
+
+// call imm16 명령어 테스트
+TEST_F(CPUTest, opcode_call_imm16)
+{
+	cpu.pc = 0x100;
+	cpu.sp = 0xFFFE;
+	cpu.memory[0x100] = 0xCD;  // opcode for CALL imm16
+	cpu.memory[0x101] = 0x34;  // 하위 바이트
+	cpu.memory[0x102] = 0x12;  // 상위 바이트
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.pc, 0x1234);	// 프로그램 카운터가 지정된 주소로 점프
+	EXPECT_EQ(cpu.memory[0xFFFD], 0x01);  // 상위 바이트가 스택에 저장됨
+	EXPECT_EQ(cpu.memory[0xFFFC], 0x03);  // 하위 바이트가 스택에 저장됨
+	EXPECT_EQ(cpu.sp, 0xFFFC);			  // 스택 포인터가 감소됨
+}
+
+// rst tgt3 명령어 테스트
+TEST_F(CPUTest, opcode_rst_tgt3)
+{
+	cpu.pc = 0x100;
+	cpu.sp = 0xFFFE;
+	cpu.memory[0x100] = 0xDF;  // opcode for RST 18H
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.pc, 0x18);  // 프로그램 카운터가 0x18로 점프
+	EXPECT_EQ(cpu.memory[0xFFFD], 0x01);  // 상위 바이트가 스택에 저장됨
+	EXPECT_EQ(cpu.memory[0xFFFC], 0x01);  // 하위 바이트가 스택에 저장됨
+	EXPECT_EQ(cpu.sp, 0xFFFC);			  // 스택 포인터가 감소됨
+}
+
+// pop r16stk 명령어 테스트
+TEST_F(CPUTest, opcode_pop_r16stk)
+{
+	// POP BC
+	cpu.pc = 0x100;
+	cpu.sp = 0xFFFC;
+	cpu.memory[0xFFFC] = 0x34;	// 하위 바이트
+	cpu.memory[0xFFFD] = 0x12;	// 상위 바이트
+	cpu.memory[0x100] = 0xC1;	// opcode for POP BC
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.BC.value, 0x1234);  // BC 레지스터가 스택에서 복원됨
+	EXPECT_EQ(cpu.sp, 0xFFFE);		  // 스택 포인터가 증가됨
+
+	// POP DE
+	cpu.pc = 0x100;
+	cpu.sp = 0xFFFC;
+	cpu.memory[0xFFFC] = 0x78;	// 하위 바이트
+	cpu.memory[0xFFFD] = 0x56;	// 상위 바이트
+	cpu.memory[0x100] = 0xD1;	// opcode for POP DE
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.DE.value, 0x5678);  // DE 레지스터가 스택에서 복원됨
+	EXPECT_EQ(cpu.sp, 0xFFFE);		  // 스택 포인터가 증가됨
+
+	// POP HL
+	cpu.pc = 0x100;
+	cpu.sp = 0xFFFC;
+	cpu.memory[0xFFFC] = 0xBC;	// 하위 바이트
+	cpu.memory[0xFFFD] = 0x9A;	// 상위 바이트
+	cpu.memory[0x100] = 0xE1;	// opcode for POP HL
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.HL.value, 0x9ABC);  // HL 레지스터가 스택에서 복원됨
+	EXPECT_EQ(cpu.sp, 0xFFFE);		  // 스택 포인터가 증가됨
+}
+
+// push r16stk 명령어 테스트
+TEST_F(CPUTest, opcode_push_r16stk)
+{
+	// PUSH BC
+	cpu.pc = 0x100;
+	cpu.sp = 0xFFFE;
+	cpu.BC.value = 0x1234;
+	cpu.memory[0x100] = 0xC5;  // opcode for PUSH BC
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.memory[0xFFFD], 0x12);  // 상위 바이트가 스택에 저장됨
+	EXPECT_EQ(cpu.memory[0xFFFC], 0x34);  // 하위 바이트가 스택에 저장됨
+	EXPECT_EQ(cpu.sp, 0xFFFC);			  // 스택 포인터가 감소됨
+
+	// PUSH DE
+	cpu.pc = 0x100;
+	cpu.sp = 0xFFFE;
+	cpu.DE.value = 0x5678;
+	cpu.memory[0x100] = 0xD5;  // opcode for PUSH DE
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.memory[0xFFFD], 0x56);  // 상위 바이트가 스택에 저장됨
+	EXPECT_EQ(cpu.memory[0xFFFC], 0x78);  // 하위 바이트가 스택에 저장됨
+	EXPECT_EQ(cpu.sp, 0xFFFC);			  // 스택 포인터가 감소됨
+
+	// PUSH HL
+	cpu.pc = 0x100;
+	cpu.sp = 0xFFFE;
+	cpu.HL.value = 0x9ABC;
+	cpu.memory[0x100] = 0xE5;  // opcode for PUSH HL
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.memory[0xFFFD], 0x9A);  // 상위 바이트가 스택에 저장됨
+	EXPECT_EQ(cpu.memory[0xFFFC], 0xBC);  // 하위 바이트가 스택에 저장됨
+	EXPECT_EQ(cpu.sp, 0xFFFC);			  // 스택 포인터가 감소됨
+}

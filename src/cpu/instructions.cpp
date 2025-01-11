@@ -13,7 +13,11 @@
 // 		opcode_opcode; // 각자 함수로 점프
 // 	}
 // }
-void CPU::opcode_dummy() { std::cerr << "Error: Dummy opcode called!\n"; }
+void CPU::opcode_dummy()
+{
+	std::cerr << "\033[1;33m" << "Error: Dummy opcode called!\n"
+			  << "\033[1;0m";
+}
 
 void CPU::opcode_nope()	 // 0b00000000
 {
@@ -415,9 +419,6 @@ void CPU::opcode_cp_a_r8()
 	F.c = value > A;
 }
 
-// TODO: ---------여기서부터 테스트 필요-------------
-// 09/01/2025
-
 void CPU::opcode_add_a_imm8()
 // 0xC6
 // Flags: Z N H C
@@ -532,4 +533,105 @@ void CPU::opcode_cp_a_imm8()
 	F.n = 1;
 	F.h = (A & 0xF) < (value & 0xF);
 	F.c = value > A;
+}
+
+// TODO: ---------여기서부터 테스트 필요-------------
+// 01/11/2025
+
+void CPU::opcode_ret_cond()
+// 0xC0 0xC8 0xD0 0xD8
+{
+	uint8_t condition = (opcode >> 3) & 0x3;
+
+	if (cond[condition]())
+	{
+		pc = memory[sp++];
+		pc |= (memory[sp++] << 8);
+	}
+}
+
+void CPU::opcode_ret()
+// 0xC9
+{
+	pc = memory[sp++];
+	pc |= (memory[sp++] << 8);
+}
+
+void CPU::opcode_reti()
+// 0xD9
+{
+	pc = memory[sp++];
+	pc |= (memory[sp++] << 8);
+
+	interrupt_enalbled = true;
+	// TODO: EI 실행 필요
+	// IME가 이 명령어 뒤에 설정된다는 의미
+}
+
+void CPU::opcode_jp_cond_imm16()
+// 0xC2 0xCA 0xD2 0xDA
+// Flags: none
+{
+	uint8_t	 condition = (opcode >> 3) & 0x3;
+	uint16_t address = memory[pc++];
+	address |= (memory[pc++] << 8);
+
+	if (cond[condition]())
+	{
+		pc = address;
+	}
+}
+
+void CPU::opcode_jp_imm16()
+// 0xC3
+// Flags: none
+{
+	uint16_t address = memory[pc++];
+	address |= (memory[pc++] << 8);
+
+	pc = address;
+}
+
+void CPU::opcode_jp_hl()
+// 0xE9
+{
+	pc = HL.value;
+}
+
+void CPU::opcode_call_cond_imm16()
+// 0xC4 0xCC 0xD4 0xDC
+{
+	uint8_t	 condition = (opcode >> 3) & 0x3;
+	uint16_t address = memory[pc++];
+	address |= (memory[pc++] << 8);
+
+	if (cond[condition]())
+	{
+		memory[--sp] = (pc & 0xFF00) >> 8;
+		memory[--sp] = (pc & 0x00FF);
+		pc = address;
+	}
+}
+
+void CPU::opcode_call_imm16()
+// 0xCD
+{
+	uint16_t address = memory[pc++];
+	address |= (memory[pc++] << 8);
+
+	memory[--sp] = (pc & 0xFF00) >> 8;
+	memory[--sp] = (pc & 0x00FF);
+	pc = address;
+}
+
+void CPU::opcode_rst_tgt3()
+// 0xC7 0xCF 0xD7 0xDF 0xE7 0xEF 0xF7 0xFF
+// Flags: none
+{
+	uint8_t target = (opcode >> 3) & 0x7;
+	uint8_t target_addr = rst[target];
+
+	memory[--sp] = (pc & 0xFF00) >> 8;
+	memory[--sp] = (pc & 0x00FF);
+	pc = target_addr;
 }
