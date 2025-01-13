@@ -1512,3 +1512,52 @@ TEST_F(CPUTest, opcode_ld_a_imm16)
 	EXPECT_EQ(cpu.A, 0x12);	   // Check if value is loaded into A
 	EXPECT_EQ(cpu.pc, 0x103);  // Program counter should advance
 }
+
+TEST_F(CPUTest, opcode_add_sp_imm8)
+{
+	// ADD SP, imm8
+	cpu.pc = 0x100;
+	cpu.sp = 0xFFF0;
+	cpu.memory[0x100] = 0xE8;  // opcode for ADD SP, imm8
+	cpu.memory[0x101] = 0x10;  // immediate value
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.sp, 0x0000);	// Check if SP is correctly updated
+	EXPECT_EQ(cpu.pc, 0x102);	// Program counter should advance
+	EXPECT_EQ(cpu.F.z, 0);		// Zero flag should be reset
+	EXPECT_EQ(cpu.F.n, 0);		// Subtract flag should be reset
+	EXPECT_EQ(cpu.F.h, 0);		// Half-carry flag should be set
+	EXPECT_EQ(cpu.F.c, 1);		// Carry flag should be set
+}
+
+TEST_F(CPUTest, opcode_ld_hl_sp_imm8)
+{
+	// LD HL, SP + imm8
+	cpu.pc = 0x100;
+	cpu.sp = 0xFFF0;
+	cpu.memory[0x100] = 0xF8;  // opcode for LD HL, SP + imm8
+	cpu.memory[0x101] = 0x10;  // immediate value
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.HL.value, 0x0000);  // Check if HL is correctly updated
+	EXPECT_EQ(cpu.pc, 0x102);		  // Program counter should advance
+	EXPECT_EQ(cpu.F.z, 0);			  // Zero flag should be reset
+	EXPECT_EQ(cpu.F.n, 0);			  // Subtract flag should be reset
+	EXPECT_EQ(cpu.F.h, 0);			  // Half-carry flag should be set
+	EXPECT_EQ(cpu.F.c, 1);			  // Carry flag should be set
+}
+
+TEST_F(CPUTest, opcode_ld_sp_hl)
+{
+	// LD SP, HL
+	cpu.pc = 0x100;
+	cpu.HL.value = 0x1234;
+	cpu.memory[0x100] = 0xF9;  // opcode for LD SP, HL
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.sp, 0x1234);	// Check if SP is correctly updated
+	EXPECT_EQ(cpu.pc, 0x101);	// Program counter should advance
+}

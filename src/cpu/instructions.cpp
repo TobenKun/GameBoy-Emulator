@@ -713,5 +713,44 @@ void CPU::opcode_ld_a_imm16()
 	A = memory[address];
 }
 
+void CPU::opcode_add_sp_imm8()
+// 0xE8
+// Flags: z n h c
+{
+	int8_t	 value = static_cast<int8_t>(memory[pc++]);
+	uint16_t result = sp + value;
+
+	// set flags
+	F.z = 0;
+	F.n = 0;
+	F.h = ((sp & 0x0F) + (value & 0x0F)) > 0x0F;
+	F.c = ((sp & 0xFF) + (value & 0xFF)) > 0xFF;
+
+	sp = result;
+}
+
+void CPU::opcode_ld_hl_sp_imm8()
+// 0xF8
+// Flags: z n h c
+{
+	int8_t	value = static_cast<int8_t>(memory[pc++]);
+	int16_t result = sp + value;
+
+	// set flags
+	F.z = 0;
+	F.n = 0;
+	F.h = ((sp & 0x0F) + (value & 0x0F)) > 0x0F;
+	F.c = ((sp & 0xFF) + (value & 0xFF)) > 0xFF;
+
+	HL.value = result;
+}
+
+void CPU::opcode_ld_sp_hl()
+// 0xF9
+// Flags: none
+{
+	sp = HL.value;
+}
+
 // TODO: ---------여기서부터 테스트 필요-------------
 // 01/13/2025

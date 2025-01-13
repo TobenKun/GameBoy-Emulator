@@ -499,6 +499,18 @@ void CPU::cycle()
 			opcode_ld_a_imm16();
 			break;
 
+		case 0xE8:
+			opcode_add_sp_imm8();
+			break;
+
+		case 0xF8:
+			opcode_ld_hl_sp_imm8();
+			break;
+
+		case 0xF9:
+			opcode_ld_sp_hl();
+			break;
+
 		// 여기 들어오면 좆된거...
 		default:
 			opcode_dummy();

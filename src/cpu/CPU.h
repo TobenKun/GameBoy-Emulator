@@ -175,12 +175,12 @@ class CPU
 	void opcode_ldh_a_imm8();
 	void opcode_ld_a_imm16();
 
-  public:  // TODO: NEED TEST!!!
-	void opcode_prefix();
-
 	void opcode_add_sp_imm8();
 	void opcode_ld_hl_sp_imm8();
 	void opcode_ld_sp_hl();
+
+  public:  // TODO: NEED TEST!!!
+	void opcode_prefix();
 
 	void opcode_di();
 	void opcode_ei();
