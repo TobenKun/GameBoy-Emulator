@@ -810,7 +810,7 @@ TEST_F(CPUTest, opcode_ld_r8_r8)
 	EXPECT_EQ(cpu.pc, 0x101);
 }
 
-/* TODO: 인터럽트 구현하고 마저 테스트하기
+/* TODO: 인터럽트 구현하고 마저 테스트하기*/
 TEST_F(CPUTest, opcode_halt)
 {
 	// HALT
@@ -820,11 +820,9 @@ TEST_F(CPUTest, opcode_halt)
 	EXPECT_TRUE(cpu.halted);
 	EXPECT_EQ(cpu.pc, 0x101);
 }
-*/
 
 TEST_F(CPUTest, opcode_add_a_r8)
-{
-	// ADD A, B
+{  // ADD A, B
 	cpu.pc = 0x100;
 	cpu.memory[0x100] = 0x80;  // ADD A, B
 	cpu.A = 0x12;
@@ -1227,7 +1225,7 @@ TEST_F(CPUTest, opcode_reti)
 
 	EXPECT_EQ(cpu.pc, 0x1234);	// 프로그램 카운터가 스택에서 복원됨
 	EXPECT_EQ(cpu.sp, 0x0000);	// 스택 포인터가 증가됨
-	EXPECT_TRUE(cpu.ime);		// 인터럽트가 활성화됨
+	EXPECT_TRUE(cpu.IME);		// 인터럽트가 활성화됨
 }
 
 // jp cond, imm16 명령어 테스트
@@ -1568,11 +1566,11 @@ TEST_F(CPUTest, opcode_di)
 	cpu.pc = 0x100;
 	cpu.memory[0x100] = 0xF3;  // opcode for DI
 
-	cpu.ime = true;	 // Interrupt Master Enable flag initially set
+	cpu.IME = true;	 // Interrupt Master Enable flag initially set
 
 	cpu.cycle();
 
-	EXPECT_EQ(cpu.ime, false);	// IME should be disabled
+	EXPECT_EQ(cpu.IME, false);	// IME should be disabled
 	EXPECT_EQ(cpu.pc, 0x101);	// Program counter should advance
 }
 
@@ -1582,10 +1580,247 @@ TEST_F(CPUTest, opcode_ei)
 	cpu.pc = 0x100;
 	cpu.memory[0x100] = 0xFB;  // opcode for EI
 
-	cpu.ime = false;  // Interrupt Master Enable flag initially reset
+	cpu.IME = false;  // Interrupt Master Enable flag initially reset
 
 	cpu.cycle();
 
-	EXPECT_EQ(cpu.ime, true);  // IME should be enabled
+	EXPECT_EQ(cpu.IME, true);  // IME should be enabled
 	EXPECT_EQ(cpu.pc, 0x101);  // Program counter should advance
+}
+
+// opcode_RLC_r8 테스트
+TEST_F(CPUTest, opcode_RLC_r8)
+{
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xCB;  // prefix
+	cpu.memory[0x101] = 0x00;  // RLC B
+	cpu.BC.hi = 0x85;		   // 10000101
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.BC.hi, 0x0B);	 // 00001011
+	EXPECT_EQ(cpu.F.c, 1);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 0);
+	EXPECT_EQ(cpu.pc, 0x102);
+}
+
+// opcode_RRC_r8 테스트
+TEST_F(CPUTest, opcode_RRC_r8)
+{
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xCB;  // prefix
+	cpu.memory[0x101] = 0x08;  // RRC B
+	cpu.BC.hi = 0x85;		   // 10000101
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.BC.hi, 0xC2);	 // 11000010
+	EXPECT_EQ(cpu.F.c, 1);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 0);
+	EXPECT_EQ(cpu.pc, 0x102);
+}
+
+// opcode_RL_r8 테스트
+TEST_F(CPUTest, opcode_RL_r8)
+{
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xCB;  // prefix
+	cpu.memory[0x101] = 0x10;  // RL B
+	cpu.BC.hi = 0x85;		   // 10000101
+	cpu.F.c = 1;
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.BC.hi, 0x0B);	 // 00001011
+	EXPECT_EQ(cpu.F.c, 1);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 0);
+	EXPECT_EQ(cpu.pc, 0x102);
+}
+
+// opcode_RR_r8 테스트
+TEST_F(CPUTest, opcode_RR_r8)
+{
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xCB;  // prefix
+	cpu.memory[0x101] = 0x18;  // RR B
+	cpu.BC.hi = 0x85;		   // 10000101
+	cpu.F.c = 1;
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.BC.hi, 0xC2);	 // 11000010
+	EXPECT_EQ(cpu.F.c, 1);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 0);
+	EXPECT_EQ(cpu.pc, 0x102);
+}
+
+// opcode_SLA_r8 테스트
+TEST_F(CPUTest, opcode_SLA_r8)
+{
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xCB;  // prefix
+	cpu.memory[0x101] = 0x20;  // SLA B
+	cpu.BC.hi = 0x85;		   // 10000101
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.BC.hi, 0x0A);	 // 00001010
+	EXPECT_EQ(cpu.F.c, 1);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 0);
+	EXPECT_EQ(cpu.pc, 0x102);
+}
+
+// opcode_SRA_r8 테스트
+TEST_F(CPUTest, opcode_SRA_r8)
+{
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xCB;  // prefix
+	cpu.memory[0x101] = 0x28;  // SRA B
+	cpu.BC.hi = 0x85;		   // 10000101
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.BC.hi, 0xC2);	 // 11000010
+	EXPECT_EQ(cpu.F.c, 1);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 0);
+	EXPECT_EQ(cpu.pc, 0x102);
+}
+
+// opcode_SRL_r8 테스트
+TEST_F(CPUTest, opcode_SRL_r8)
+{
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xCB;  // prefix
+	cpu.memory[0x101] = 0x38;  // SRL B
+	cpu.BC.hi = 0x85;		   // 10000101
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.BC.hi, 0x42);	 // 01000010
+	EXPECT_EQ(cpu.F.c, 1);
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 0);
+	EXPECT_EQ(cpu.pc, 0x102);
+}
+
+// opcode_SWAP_r8 테스트
+TEST_F(CPUTest, opcode_SWAP_r8)
+{
+	// SWAP B
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xCB;  // prefix
+	cpu.memory[0x101] = 0x30;  // SWAP B
+	cpu.BC.hi = 0x85;		   // 10000101
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.BC.hi, 0x58);	 // 01011000
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 0);
+	EXPECT_EQ(cpu.F.c, 0);
+	EXPECT_EQ(cpu.pc, 0x102);
+
+	// SWAP C
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xCB;  // prefix
+	cpu.memory[0x101] = 0x31;  // SWAP C
+	cpu.BC.lo = 0x12;		   // 00010010
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.BC.lo, 0x21);	 // 00100001
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 0);
+	EXPECT_EQ(cpu.F.c, 0);
+	EXPECT_EQ(cpu.pc, 0x102);
+
+	// SWAP D
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xCB;  // prefix
+	cpu.memory[0x101] = 0x32;  // SWAP D
+	cpu.DE.hi = 0xF0;		   // 11110000
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.DE.hi, 0x0F);	 // 00001111
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 0);
+	EXPECT_EQ(cpu.F.c, 0);
+	EXPECT_EQ(cpu.pc, 0x102);
+
+	// SWAP E cpu.pc = 0x100;
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xCB;  // prefix
+	cpu.memory[0x101] = 0x33;  // SWAP E
+	cpu.DE.lo = 0x00;		   // 00000000
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.DE.lo, 0x00);	 // 00000000
+	EXPECT_EQ(cpu.F.z, 1);		 // Zero flag should be set
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 0);
+	EXPECT_EQ(cpu.F.c, 0);
+	EXPECT_EQ(cpu.pc, 0x102);
+
+	// SWAP H
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xCB;  // prefix
+	cpu.memory[0x101] = 0x34;  // SWAP H
+	cpu.HL.hi = 0x3C;		   // 00111100
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.HL.hi, 0xC3);	 // 11000011
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 0);
+	EXPECT_EQ(cpu.F.c, 0);
+	EXPECT_EQ(cpu.pc, 0x102);
+
+	// SWAP L
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xCB;  // prefix
+	cpu.memory[0x101] = 0x35;  // SWAP L
+	cpu.HL.lo = 0x7E;		   // 01111110
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.HL.lo, 0xE7);	 // 11100111
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 0);
+	EXPECT_EQ(cpu.F.c, 0);
+	EXPECT_EQ(cpu.pc, 0x102);
+
+	// SWAP A
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xCB;  // prefix
+	cpu.memory[0x101] = 0x37;  // SWAP A
+	cpu.A = 0x9A;			   // 10011010
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.A, 0xA9);	 // 10101001
+	EXPECT_EQ(cpu.F.z, 0);
+	EXPECT_EQ(cpu.F.n, 0);
+	EXPECT_EQ(cpu.F.h, 0);
+	EXPECT_EQ(cpu.F.c, 0);
+	EXPECT_EQ(cpu.pc, 0x102);
 }

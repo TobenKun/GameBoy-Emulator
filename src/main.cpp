@@ -12,7 +12,7 @@ int main(int ac, char** av)
 	CPU cpu;
 
 	cpu.LoadROM(av[1]);
-	// cpu.run();
+	cpu.run();
 
 	return (0);
 }

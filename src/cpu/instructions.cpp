@@ -292,7 +292,7 @@ void CPU::opcode_halt()
 // 0x76
 // Flags: none
 {
-	// TODO: 인터럽트 구조 짜고 나서 만들기
+	halted = true;
 }
 
 void CPU::opcode_add_a_r8()
@@ -560,7 +560,7 @@ void CPU::opcode_reti()
 	pc = memory[sp++];
 	pc |= (memory[sp++] << 8);
 
-	ime = true;
+	IME = true;
 }
 
 void CPU::opcode_jp_cond_imm16()
@@ -655,7 +655,28 @@ void CPU::opcode_push_r16stk()
 
 void CPU::opcode_prefix()
 {
-	// TODO: prefix 함수 만들고 스위치 케이스로 연결?
+	opcode = memory[pc++];
+	if (opcode < 0x08)
+		prefix_rlc_r8();
+	else if (opcode < 0x10)
+		prefix_rrc_r8();
+	else if (opcode < 0x18)
+		prefix_rl_r8();
+	else if (opcode < 0x20)
+		prefix_rr_r8();
+	else if (opcode < 0x28)
+		prefix_sla_r8();
+	else if (opcode < 0x30)
+		prefix_sra_r8();
+	else if (opcode < 0x38)
+		prefix_swap_r8();
+	else if (opcode < 0x40)
+		prefix_srl_r8();
+	else
+	{
+		std::cerr << "\033[1;33m" << "Error: prefix opcode wrong!\n"
+				  << "\033[1;0m";
+	}
 }
 
 void CPU::opcode_ldh_c_a()
@@ -754,15 +775,150 @@ void CPU::opcode_di()
 // 0xF3
 // Flags: none
 {
-	ime = false;
+	IME = false;
 }
 
 void CPU::opcode_ei()
 // 0xFB
 // Flags: none
 {
-	ime = true;
+	IME = true;
 }
 
 // TODO: ---------여기서부터 테스트 필요-------------
 // 01/13/2025
+
+void CPU::prefix_rlc_r8()
+// 0x00 - 0x07
+// Flags: z n h c
+{
+	uint8_t	 operand = opcode & 0x7;
+	uint8_t& target = r8[operand]();
+
+	F.c = (target & 0x80) >> 7;
+	target <<= 1;
+	target |= F.c;
+
+	// flag adjustment
+	F.z = target == 0;
+	F.n = 0;
+	F.h = 0;
+}
+
+void CPU::prefix_rrc_r8()
+// 0x08 - 0x0F
+// Flags: z n h c
+{
+	uint8_t	 operand = opcode & 0x7;
+	uint8_t& target = r8[operand]();
+
+	F.c = target & 0x01;
+	target >>= 1;
+	target |= F.c << 7;
+
+	// flag adjustment
+	F.z = target == 0;
+	F.n = 0;
+	F.h = 0;
+}
+
+void CPU::prefix_rl_r8()
+// 0x10 - 0x17
+// Flags: z n h c
+{
+	uint8_t	 operand = opcode & 0x7;
+	uint8_t& target = r8[operand]();
+	bool	 extra_bit = F.c;
+
+	F.c = (target & 0x80) >> 7;
+	target <<= 1;
+	target |= extra_bit;
+
+	// flag adjustment
+	F.z = target == 0;
+	F.n = 0;
+	F.h = 0;
+}
+
+void CPU::prefix_rr_r8()
+// 0x18 - 0x1F
+// Flags:: z n h c
+{
+	uint8_t	 operand = opcode & 0x7;
+	uint8_t& target = r8[operand]();
+	bool	 extra_bit = F.c;
+
+	F.c = target & 0x01;
+	target >>= 1;
+	target |= extra_bit << 7;
+
+	// flag adjustment
+	F.z = target == 0;
+	F.n = 0;
+	F.h = 0;
+}
+
+void CPU::prefix_sla_r8()
+// 0x20 - 0x27
+// Flags:: z n h c
+{
+	uint8_t	 operand = opcode & 0x7;
+	uint8_t& target = r8[operand]();
+
+	F.c = (target & 0x80) >> 7;
+	target <<= 1;
+
+	// flag adjustment
+	F.z = target == 0;
+	F.n = 0;
+	F.h = 0;
+}
+
+void CPU::prefix_sra_r8()
+{
+	uint8_t	 operand = opcode & 0x7;
+	uint8_t& target = r8[operand]();
+
+	F.c = target & 0x01;
+	target = (target >> 1) |
+			 (target & 0x80);  // 오른쪽으로 시프트하고 왼쪽 비트를 유지
+
+	// flag adjustment
+	F.z = target == 0;
+	F.n = 0;
+	F.h = 0;
+}
+
+void CPU::prefix_swap_r8()
+// 0x30 - 0x37
+// Flags: z n h c
+{
+	uint8_t	 operand = opcode & 0x7;
+	uint8_t& target = r8[operand]();
+	uint8_t	 tmp = target & 0xF0;
+
+	target <<= 4;
+	target |= tmp >> 4;
+
+	// flag adjustment
+	F.z = target == 0;
+	F.n = 0;
+	F.h = 0;
+	F.c = 0;
+}
+
+void CPU::prefix_srl_r8()
+// 0x38 - 0x3F
+// Flags: z n h c
+{
+	uint8_t	 operand = opcode & 0x7;
+	uint8_t& target = r8[operand]();
+
+	F.c = target & 0x01;
+	target >>= 1;
+
+	// flag adjustment
+	F.z = target == 0;
+	F.n = 0;
+	F.h = 0;
+}

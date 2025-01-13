@@ -24,6 +24,20 @@ struct Flags
 	uint8_t z : 1;
 };
 
+union Interrupt_table
+{
+	uint8_t value;
+	struct
+	{
+		uint8_t vblank : 1;
+		uint8_t lcd : 1;
+		uint8_t timer : 1;
+		uint8_t serial : 1;
+		uint8_t joypad : 1;
+		uint8_t unused : 4;
+	};
+};
+
 class CPU
 {
   public:
@@ -31,7 +45,9 @@ class CPU
 	~CPU();
 	bool LoadROM(const std::string& filename);
 	void run();
+	void do_opcode();
 	void cycle();
+	bool interrupt_pending();
 
   public:  // for debug func
 	void PrintRegisters() const;
@@ -58,6 +74,9 @@ class CPU
 	uint16_t pc;
 
 	uint8_t opcode;
+
+	Interrupt_table IE;
+	Interrupt_table IF;
 
 	// get 8-bit register
 	std::array<std::function<uint8_t&()>, 8> r8 = {
@@ -182,13 +201,26 @@ class CPU
 	void opcode_di();
 	void opcode_ei();
 
-  public:  // TODO: NEED TEST!!!
+	void opcode_halt();
+
 	void opcode_prefix();
 
-	// 제일 마지막에 만들어야함
-	void opcode_halt();
+	void prefix_rlc_r8();
+	void prefix_rrc_r8();
+	void prefix_rl_r8();
+	void prefix_rr_r8();
+	void prefix_sla_r8();
+	void prefix_sra_r8();
+	void prefix_swap_r8();
+	void prefix_srl_r8();
+
+  public:  // TODO: NEED TEST!!!
+	void prefix_bit_b3_r8();
+	void prefix_res_b3_r8();
+	void prefix_set_b3_r8();
 
   public:  // for gameboy state
 	bool stopped;
-	bool ime;
+	bool halted;
+	bool IME;
 };

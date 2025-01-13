@@ -6,7 +6,17 @@
 #include <vector>
 
 CPU::CPU() :
-	AF({0}), BC({0}), DE({0}), HL({0}), sp(0), pc(0), stopped(false), ime(true)
+	AF({0}),
+	BC({0}),
+	DE({0}),
+	HL({0}),
+	sp(0),
+	pc(0),
+	IE({0}),
+	IF({0}),
+	stopped(false),
+	halted(false),
+	IME(true)
 {
 	memory.fill(0);
 	// else
@@ -59,7 +69,22 @@ void CPU::run()
 
 void CPU::cycle()
 {
+	if (halted)
+	{
+		if (interrupt_pending())
+		{
+			halted = false;
+		}
+		return;
+	}
 	opcode = memory[pc++];
+	do_opcode();
+}
+
+bool CPU::interrupt_pending() { return ((IE.value & IF.value) != 0); }
+
+void CPU::do_opcode()
+{
 	switch (opcode)
 	{
 		// nop
@@ -510,6 +535,10 @@ void CPU::cycle()
 
 		case 0xFB:
 			opcode_ei();
+			break;
+
+		case 0xCB:
+			opcode_prefix();
 			break;
 
 		// 여기 들어오면 좆된거...
