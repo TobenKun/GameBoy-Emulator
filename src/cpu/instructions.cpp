@@ -560,9 +560,7 @@ void CPU::opcode_reti()
 	pc = memory[sp++];
 	pc |= (memory[sp++] << 8);
 
-	interrupt_enalbled = true;
-	// TODO: EI 실행 필요
-	// IME가 이 명령어 뒤에 설정된다는 의미
+	ime = true;
 }
 
 void CPU::opcode_jp_cond_imm16()
@@ -750,6 +748,20 @@ void CPU::opcode_ld_sp_hl()
 // Flags: none
 {
 	sp = HL.value;
+}
+
+void CPU::opcode_di()
+// 0xF3
+// Flags: none
+{
+	ime = false;
+}
+
+void CPU::opcode_ei()
+// 0xFB
+// Flags: none
+{
+	ime = true;
 }
 
 // TODO: ---------여기서부터 테스트 필요-------------

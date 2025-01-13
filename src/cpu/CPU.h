@@ -179,16 +179,16 @@ class CPU
 	void opcode_ld_hl_sp_imm8();
 	void opcode_ld_sp_hl();
 
-  public:  // TODO: NEED TEST!!!
-	void opcode_prefix();
-
 	void opcode_di();
 	void opcode_ei();
+
+  public:  // TODO: NEED TEST!!!
+	void opcode_prefix();
 
 	// 제일 마지막에 만들어야함
 	void opcode_halt();
 
   public:  // for gameboy state
 	bool stopped;
-	bool interrupt_enalbled;
+	bool ime;
 };

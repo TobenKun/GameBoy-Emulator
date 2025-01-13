@@ -1226,8 +1226,8 @@ TEST_F(CPUTest, opcode_reti)
 	cpu.cycle();
 
 	EXPECT_EQ(cpu.pc, 0x1234);	// 프로그램 카운터가 스택에서 복원됨
-	EXPECT_EQ(cpu.sp, 0x0000);			  // 스택 포인터가 증가됨
-	EXPECT_TRUE(cpu.interrupt_enalbled);  // 인터럽트가 활성화됨
+	EXPECT_EQ(cpu.sp, 0x0000);	// 스택 포인터가 증가됨
+	EXPECT_TRUE(cpu.ime);		// 인터럽트가 활성화됨
 }
 
 // jp cond, imm16 명령어 테스트
@@ -1560,4 +1560,32 @@ TEST_F(CPUTest, opcode_ld_sp_hl)
 
 	EXPECT_EQ(cpu.sp, 0x1234);	// Check if SP is correctly updated
 	EXPECT_EQ(cpu.pc, 0x101);	// Program counter should advance
+}
+
+TEST_F(CPUTest, opcode_di)
+{
+	// DI (Disable Interrupts)
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xF3;  // opcode for DI
+
+	cpu.ime = true;	 // Interrupt Master Enable flag initially set
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.ime, false);	// IME should be disabled
+	EXPECT_EQ(cpu.pc, 0x101);	// Program counter should advance
+}
+
+TEST_F(CPUTest, opcode_ei)
+{
+	// EI (Enable Interrupts)
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xFB;  // opcode for EI
+
+	cpu.ime = false;  // Interrupt Master Enable flag initially reset
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.ime, true);  // IME should be enabled
+	EXPECT_EQ(cpu.pc, 0x101);  // Program counter should advance
 }

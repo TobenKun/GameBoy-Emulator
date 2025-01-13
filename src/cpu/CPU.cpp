@@ -6,14 +6,7 @@
 #include <vector>
 
 CPU::CPU() :
-	AF({0}),
-	BC({0}),
-	DE({0}),
-	HL({0}),
-	sp(0),
-	pc(0),
-	stopped(false),
-	interrupt_enalbled(true)
+	AF({0}), BC({0}), DE({0}), HL({0}), sp(0), pc(0), stopped(false), ime(true)
 {
 	memory.fill(0);
 	// else
@@ -509,6 +502,14 @@ void CPU::cycle()
 
 		case 0xF9:
 			opcode_ld_sp_hl();
+			break;
+
+		case 0xF3:
+			opcode_di();
+			break;
+
+		case 0xFB:
+			opcode_ei();
 			break;
 
 		// 여기 들어오면 좆된거...
