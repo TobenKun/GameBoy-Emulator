@@ -165,11 +165,8 @@ class CPU
 	void opcode_call_imm16();
 	void opcode_rst_tgt3();
 
-  public:  // TODO: NEED TEST!!!
 	void opcode_pop_r16stk();
 	void opcode_push_r16stk();
-
-	void opcode_prefix();
 
 	void opcode_ldh_c_a();
 	void opcode_ldh_imm8_a();
@@ -177,6 +174,9 @@ class CPU
 	void opcode_ldh_a_c();
 	void opcode_ldh_a_imm8();
 	void opcode_ld_a_imm16();
+
+  public:  // TODO: NEED TEST!!!
+	void opcode_prefix();
 
 	void opcode_add_sp_imm8();
 	void opcode_ld_hl_sp_imm8();

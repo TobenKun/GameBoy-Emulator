@@ -1424,3 +1424,91 @@ TEST_F(CPUTest, opcode_push_r16stk)
 	EXPECT_EQ(cpu.memory[0xFFFC], 0xBC);  // 하위 바이트가 스택에 저장됨
 	EXPECT_EQ(cpu.sp, 0xFFFC);			  // 스택 포인터가 감소됨
 }
+
+TEST_F(CPUTest, opcode_ldh_c_a)
+{
+	// LDH (C), A
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xE2;  // opcode for LDH (C), A
+	cpu.A = 0x12;
+	cpu.BC.lo = 0x34;  // C register
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.memory[0xFF00 + 0x34],
+			  0x12);		   // Check if value is stored in memory
+	EXPECT_EQ(cpu.pc, 0x101);  // Program counter should advance
+}
+
+TEST_F(CPUTest, opcode_ldh_imm8_a)
+{
+	// LDH (imm8), A
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xE0;  // opcode for LDH (imm8), A
+	cpu.memory[0x101] = 0x34;  // immediate value
+	cpu.A = 0x12;
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.memory[0xFF00 + 0x34],
+			  0x12);		   // Check if value is stored in memory
+	EXPECT_EQ(cpu.pc, 0x102);  // Program counter should advance
+}
+
+TEST_F(CPUTest, opcode_ld_imm16_a)
+{
+	// LD (imm16), A
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xEA;  // opcode for LD (imm16), A
+	cpu.memory[0x101] = 0x34;  // low byte of imm16
+	cpu.memory[0x102] = 0x12;  // high byte of imm16
+	cpu.A = 0x12;
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.memory[0x1234], 0x12);  // Check if value is stored in memory
+	EXPECT_EQ(cpu.pc, 0x103);			  // Program counter should advance
+}
+
+TEST_F(CPUTest, opcode_ldh_a_c)
+{
+	// LDH A, (C)
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xF2;		   // opcode for LDH A, (C)
+	cpu.BC.lo = 0x34;				   // C register
+	cpu.memory[0xFF00 + 0x34] = 0x12;  // value in memory
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.A, 0x12);	   // Check if value is loaded into A
+	EXPECT_EQ(cpu.pc, 0x101);  // Program counter should advance
+}
+
+TEST_F(CPUTest, opcode_ldh_a_imm8)
+{
+	// LDH A, (imm8)
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xF0;		   // opcode for LDH A, (imm8)
+	cpu.memory[0x101] = 0x34;		   // immediate value
+	cpu.memory[0xFF00 + 0x34] = 0x12;  // value in memory
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.A, 0x12);	   // Check if value is loaded into A
+	EXPECT_EQ(cpu.pc, 0x102);  // Program counter should advance
+}
+
+TEST_F(CPUTest, opcode_ld_a_imm16)
+{
+	// LD A, (imm16)
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xFA;	// opcode for LD A, (imm16)
+	cpu.memory[0x101] = 0x34;	// low byte of imm16
+	cpu.memory[0x102] = 0x12;	// high byte of imm16
+	cpu.memory[0x1234] = 0x12;	// value in memory
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.A, 0x12);	   // Check if value is loaded into A
+	EXPECT_EQ(cpu.pc, 0x103);  // Program counter should advance
+}

@@ -535,9 +535,6 @@ void CPU::opcode_cp_a_imm8()
 	F.c = value > A;
 }
 
-// TODO: ---------여기서부터 테스트 필요-------------
-// 01/11/2025
-
 void CPU::opcode_ret_cond()
 // 0xC0 0xC8 0xD0 0xD8
 {
@@ -635,3 +632,86 @@ void CPU::opcode_rst_tgt3()
 	memory[--sp] = (pc & 0x00FF);
 	pc = target_addr;
 }
+
+void CPU::opcode_pop_r16stk()
+// 0xC1 0xD1 0xE1 0xF1
+// Flags: none
+{
+	uint8_t	  operand = (opcode >> 4) & 0x3;
+	uint16_t& target = r16stk[operand]();
+
+	target = memory[sp++];
+	target |= (memory[sp++] << 8);
+}
+
+void CPU::opcode_push_r16stk()
+// 0xC5 0xD5 0xE5 0xF5
+// Flags: none
+{
+	uint8_t	 operand = (opcode >> 4) & 0x3;
+	uint16_t target = r16stk[operand]();
+
+	memory[--sp] = (target & 0xFF00) >> 8;
+	memory[--sp] = (target & 0x00FF);
+}
+
+void CPU::opcode_prefix()
+{
+	// TODO: prefix 함수 만들고 스위치 케이스로 연결?
+}
+
+void CPU::opcode_ldh_c_a()
+// 0xE2
+// Flags: none
+{
+	uint16_t address = 0xFF00 + BC.lo;
+
+	memory[address] = A;
+}
+
+void CPU::opcode_ldh_imm8_a()
+// 0xE0
+// Flags: none
+{
+	uint16_t address = 0xFF00 + memory[pc++];
+
+	memory[address] = A;
+}
+
+void CPU::opcode_ld_imm16_a()
+// 0xEA
+{
+	uint16_t address = memory[pc++];
+	address |= (memory[pc++] << 8);
+
+	memory[address] = A;
+}
+
+void CPU::opcode_ldh_a_c()
+// 0xF2
+// Flags: none
+{
+	uint16_t address = 0xFF00 + BC.lo;
+
+	A = memory[address];
+}
+
+void CPU::opcode_ldh_a_imm8()
+// 0xF0
+{
+	uint16_t address = 0xFF00 + memory[pc++];
+
+	A = memory[address];
+}
+
+void CPU::opcode_ld_a_imm16()
+// 0xFA
+{
+	uint16_t address = memory[pc++];
+	address |= (memory[pc++] << 8);
+
+	A = memory[address];
+}
+
+// TODO: ---------여기서부터 테스트 필요-------------
+// 01/13/2025

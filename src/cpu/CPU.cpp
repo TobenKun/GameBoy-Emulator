@@ -461,6 +461,44 @@ void CPU::cycle()
 			opcode_rst_tgt3();
 			break;
 
+		case 0xC1:
+		case 0xD1:
+		case 0xE1:
+		case 0xF1:
+			opcode_pop_r16stk();
+			break;
+
+		case 0xC5:
+		case 0xD5:
+		case 0xE5:
+		case 0xF5:
+			opcode_push_r16stk();
+			break;
+
+		case 0xE2:
+			opcode_ldh_c_a();
+			break;
+
+		case 0xE0:
+			opcode_ldh_imm8_a();
+			break;
+
+		case 0xEA:
+			opcode_ld_imm16_a();
+			break;
+
+		case 0xF2:
+			opcode_ldh_a_c();
+			break;
+
+		case 0xF0:
+			opcode_ldh_a_imm8();
+			break;
+
+		case 0xFA:
+			opcode_ld_a_imm16();
+			break;
+
 		// 여기 들어오면 좆된거...
 		default:
 			opcode_dummy();
