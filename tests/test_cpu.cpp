@@ -1824,3 +1824,55 @@ TEST_F(CPUTest, opcode_SWAP_r8)
 	EXPECT_EQ(cpu.F.c, 0);
 	EXPECT_EQ(cpu.pc, 0x102);
 }
+
+// opcode_RES_b3_r8 테스트
+TEST_F(CPUTest, opcode_RES_b3_r8)
+{
+	// RES 3, B
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xCB;  // prefix
+	cpu.memory[0x101] = 0x98;  // RES 3, B
+	cpu.BC.hi = 0xFF;		   // 11111111
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.BC.hi, 0xF7);	 // 11110111
+	EXPECT_EQ(cpu.pc, 0x102);
+
+	// RES 3, C
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xCB;  // prefix
+	cpu.memory[0x101] = 0x99;  // RES 3, C
+	cpu.BC.lo = 0xFF;		   // 11111111
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.BC.lo, 0xF7);	 // 11110111
+	EXPECT_EQ(cpu.pc, 0x102);
+}
+
+// opcode_SET_b3_r8 테스트
+TEST_F(CPUTest, opcode_SET_b3_r8)
+{
+	// SET 3, B
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xCB;  // prefix
+	cpu.memory[0x101] = 0xD8;  // SET 3, B
+	cpu.BC.hi = 0x00;		   // 00000000
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.BC.hi, 0x08);	 // 00001000
+	EXPECT_EQ(cpu.pc, 0x102);
+
+	// SET 3, C
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xCB;  // prefix
+	cpu.memory[0x101] = 0xD9;  // SET 3, C
+	cpu.BC.lo = 0x00;		   // 00000000
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.BC.lo, 0x08);	 // 00001000
+	EXPECT_EQ(cpu.pc, 0x102);
+}

@@ -672,11 +672,12 @@ void CPU::opcode_prefix()
 		prefix_swap_r8();
 	else if (opcode < 0x40)
 		prefix_srl_r8();
+	else if (opcode < 0x80)
+		prefix_bit_b3_r8();
+	else if (opcode < 0xC0)
+		prefix_res_b3_r8();
 	else
-	{
-		std::cerr << "\033[1;33m" << "Error: prefix opcode wrong!\n"
-				  << "\033[1;0m";
-	}
+		prefix_set_b3_r8();
 }
 
 void CPU::opcode_ldh_c_a()
@@ -784,9 +785,6 @@ void CPU::opcode_ei()
 {
 	IME = true;
 }
-
-// TODO: ---------여기서부터 테스트 필요-------------
-// 01/13/2025
 
 void CPU::prefix_rlc_r8()
 // 0x00 - 0x07
@@ -921,4 +919,41 @@ void CPU::prefix_srl_r8()
 	F.z = target == 0;
 	F.n = 0;
 	F.h = 0;
+}
+
+void CPU::prefix_bit_b3_r8()
+// 0x40 - 0x7F
+// Flags: z n h
+{
+	uint8_t	 target = opcode & 0x07;
+	uint8_t& target_register = r8[target]();
+	uint8_t	 bit = (opcode >> 3) & 0x07;
+	uint8_t	 value = target_register & (1 << bit);
+
+	// flag adjustment
+	F.z = value == 0;
+	F.n = 0;
+	F.h = 1;
+}
+
+void CPU::prefix_res_b3_r8()
+// 0x80 - 0xBF
+// Flags: none
+{
+	uint8_t	 target = opcode & 0x07;
+	uint8_t& target_register = r8[target]();
+	uint8_t	 bit = (opcode >> 3) & 0x07;
+
+	target_register &= ~(1 << bit);
+}
+
+void CPU::prefix_set_b3_r8()
+// 0xC0 - 0xFF
+// Flags: none
+{
+	uint8_t	 target = opcode & 0x07;
+	uint8_t& target_register = r8[target]();
+	uint8_t	 bit = (opcode >> 3) & 0x07;
+
+	target_register |= (1 << bit);
 }
