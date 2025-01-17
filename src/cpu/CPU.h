@@ -55,6 +55,8 @@ class CPU
 
   public:
 	std::array<uint8_t, 0x10000> memory;
+	// TODO: 별도의 메모리 클래스로 분리 해야 할듯
+	// 그 경우 명령어 셋에서 어떻게 메모리로 접근할지는 고민해보아야함
 
 	// Register
 	union
