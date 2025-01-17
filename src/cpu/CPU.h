@@ -214,11 +214,12 @@ class CPU
 	void prefix_swap_r8();
 	void prefix_srl_r8();
 
-  public:  // TODO: NEED TEST!!!
 	void prefix_bit_b3_r8();
 	void prefix_res_b3_r8();
 	void prefix_set_b3_r8();
 
+  public:  // TODO: NEED TEST!!!
+		   // 테스트 해야할 함수는 여기로..
   public:  // for gameboy state
 	bool stopped;
 	bool halted;

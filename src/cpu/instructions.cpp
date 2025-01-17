@@ -26,11 +26,12 @@ void CPU::opcode_nope()	 // 0b00000000
 
 void CPU::opcode_ld_r16_imm16()	 // 0x01 0x11 0x21 0x31
 {
-	int dest = (opcode & 0x30) >> 4;
+	int operand = (opcode & 0x30) >> 4;
 
-	uint16_t& target = r16[dest]();
-	uint16_t  imm_byte = memory[pc++];
+	uint16_t imm_byte = memory[pc++];
 	imm_byte |= (memory[pc++] << 8);  // little endian!!!!!!!
+
+	uint16_t& target = r16[operand]();
 
 	target = imm_byte;
 }

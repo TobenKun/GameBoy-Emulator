@@ -1825,6 +1825,35 @@ TEST_F(CPUTest, opcode_SWAP_r8)
 	EXPECT_EQ(cpu.pc, 0x102);
 }
 
+TEST_F(CPUTest, opcode_BIT_b3_r8)
+{
+	// BIT 3, B
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xCB;  // prefix
+	cpu.memory[0x101] = 0x58;  // BIT 3, B
+	cpu.BC.hi = 0x08;		   // 00001000
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.F.z, 0);	// Zero flag should be reset
+	EXPECT_EQ(cpu.F.n, 0);	// Subtract flag should be reset
+	EXPECT_EQ(cpu.F.h, 1);	// Half-carry flag should be set
+	EXPECT_EQ(cpu.pc, 0x102);
+
+	// BIT 3, C
+	cpu.pc = 0x100;
+	cpu.memory[0x100] = 0xCB;  // prefix
+	cpu.memory[0x101] = 0x59;  // BIT 3, C
+	cpu.BC.lo = 0x00;		   // 00000000
+
+	cpu.cycle();
+
+	EXPECT_EQ(cpu.F.z, 1);	// Zero flag should be set
+	EXPECT_EQ(cpu.F.n, 0);	// Subtract flag should be reset
+	EXPECT_EQ(cpu.F.h, 1);	// Half-carry flag should be set
+	EXPECT_EQ(cpu.pc, 0x102);
+}
+
 // opcode_RES_b3_r8 테스트
 TEST_F(CPUTest, opcode_RES_b3_r8)
 {
